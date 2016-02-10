@@ -1,0 +1,17 @@
+<launch>
+
+  <node name="ar_pose" pkg="ar_pose" type="ar_single" respawn="false"
+    output="screen">
+    <param name="marker_pattern" type="string"
+      value="$(find ar_pose)/data/patt.sample1"/>
+    <param name="marker_width" type="double" value="152.4"/>
+    <param name="marker_center_x" type="double" value="0.0"/>
+    <param name="marker_center_y" type="double" value="0.0"/>
+    <param name="threshold" type="int" value="100"/>
+    <param name="use_history" type="bool" value="true"/>
+    <remap to="/camera/rgb/image_rect_mono" from="/camera/image_rect" />
+    <remap to="/camera/rgb/image_raw" from="/camera/image_raw" />
+    <remap to="/camera/rgb/camera_info" from="/camera/camera_info" />
+  </node>
+
+</launch>

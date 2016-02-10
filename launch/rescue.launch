@@ -1,0 +1,51 @@
+<launch>
+
+  <!-- Read Required Command Line Arguments: -->
+  <arg name="initial_pose" default="$(find zeta_rescue)/data/initial_pose.yaml"/>
+  <arg name="map_file" default="$(find zeta_rescue)/data/map.yaml"/>
+  <arg name="landmark_file" default="$(find zeta_rescue)/data/landmarks.csv"/>
+
+  <!-- Load initial pose parameters from yaml file: -->
+  <rosparam command="load" file="$(arg initial_pose)" />
+  <rosparam param="landmark_file" subst_value="true">$(arg landmark_file)</rosparam>
+  <include file="$(find turtlebot_bringup)/launch/minimal.launch" />
+
+  <node name="report_button" pkg="zeta_rescue" type="button.py" />
+
+  <node pkg="sound_play" name="sound" type="soundplay_node.py"/>
+
+  <node name="ar_pose" pkg="ar_pose" type="ar_single" respawn="false"
+    output="screen">
+    <param name="marker_pattern" type="string"
+      value="$(find ar_pose)/data/patt.sample1"/>
+    <param name="marker_width" type="double" value="80.0"/>
+    <param name="marker_center_x" type="double" value="0.0"/>
+    <param name="marker_center_y" type="double" value="0.0"/>
+    <param name="threshold" type="int" value="100"/>
+    <param name="use_history" type="bool" value="true"/>
+    <remap to="/camera/rgb/image_rect_mono" from="/camera/image_rect" />
+    <remap to="/camera/rgb/image_raw" from="/camera/image_raw" />
+    <remap to="/camera/rgb/camera_info" from="/camera/camera_info" />
+  </node> 
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find zeta_rescue)/data/custom.rviz"/>
+  <node name="random_nav" pkg="zeta_rescue" type="random_nav.py" output="screen"/>
+
+
+  <include file="$(find turtlebot_bringup)/launch/3dsensor.launch">
+    <arg name="rgb_processing" value="false" />
+    <arg name="depth_registration" value="false" />
+    <arg name="depth_processing" value="false" />
+    <arg name="scan_topic" value="/scan" />
+  </include>
+
+  <!-- Map server -->
+  <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
+
+  <include file="$(find zeta_rescue)/launch/includes/amcl.launch.xml">
+     <arg name="initial_pose" value="$(arg initial_pose)" />
+  </include>
+
+
+  <include file="$(find zeta_rescue)/launch/includes/move_base.launch.xml"/>
+
+</launch>
