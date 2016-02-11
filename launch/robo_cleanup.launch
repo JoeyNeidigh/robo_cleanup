@@ -1,8 +1,8 @@
 <launch>
 
   <!-- Read Required Command Line Arguments: -->
-  <arg name="initial_pose" default="$(find cleanup)/data/initial_pose.yaml"/>
-  <arg name="map_file" default="$(find cleanup)/data/map.yaml"/>
+  <!--arg name="initial_pose" default="$(find robo_cleanup)/data/initial_pose.yaml"-->
+  <arg name="map_file" default="$(find robo_cleanup)/data/corner_map.yaml"/>
 
   <!-- Load initial pose parameters from yaml file: -->
   <rosparam command="load" file="$(arg initial_pose)" />
@@ -23,8 +23,8 @@
     <remap to="/camera/rgb/image_raw" from="/camera/image_raw" />
     <remap to="/camera/rgb/camera_info" from="/camera/camera_info" />
   </node> 
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find cleanup)/data/custom.rviz"/>
-  <node name="random_nav" pkg="cleanup" type="random_nav.py" output="screen"/>
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find robo_cleanup)/data/custom.rviz"/>
+  <node name="robo_cleanup" pkg="robo_cleanup" type="robo_cleanup.py" output="screen"/>
 
 
   <include file="$(find turtlebot_bringup)/launch/3dsensor.launch">
@@ -37,11 +37,11 @@
   <!-- Map server -->
   <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
 
-  <include file="$(find cleanup)/launch/includes/amcl.launch.xml">
-     <arg name="initial_pose" value="$(arg initial_pose)" />
+  <include file="$(find robo_cleanup)/launch/includes/amcl.launch.xml">
+     <--arg name="initial_pose" value="$(arg initial_pose)" -->
   </include>
 
 
-  <include file="$(find cleanup)/launch/includes/move_base.launch.xml"/>
+  <include file="$(find robo_cleanup)/launch/includes/move_base.launch.xml"/>
 
 </launch>
