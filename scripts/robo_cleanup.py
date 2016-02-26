@@ -1,24 +1,24 @@
 #!/usr/bin/env python
-
-"""This node repeatedly selects random map positions until it finds
-  one that can be navigated to.
-
-  It then navigates to the random goals using the ROS navigation stack.
-
-"""
 import rospy
 import map_utils
 import random
 import tf
 import actionlib
-
+import numpy as np
+import cv2
+from sensor_msgs.msg import Image
+from cv_bridge import CvBridge, CvBridgeError
 from move_base_msgs.msg import MoveBaseGoal, MoveBaseAction
 from geometry_msgs.msg import Pose, Point
+from geometry_msgs.msg import PoseWithCovarianceStamped, PoseStamped
 from nav_msgs.msg import OccupancyGrid
+from actionlib_msgs.msg import *
+from visualization_msgs.msg import Marker
+from sound_play.msg import SoundRequest
 
-class RandomNavNode(object):
+class RoboCleanupNode(object):
     def __init__(self):
-        rospy.init_node('random_nav')
+        rospy.init_node('robo_cleanup')
 
         self.ac = actionlib.SimpleActionClient("move_base", MoveBaseAction)
 
