@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import rospy
+import pickle
 import os
 from socket import *
 
@@ -11,7 +12,19 @@ class ServerNode():
         self.addr = (host, port)
         self.UDPSock = socket(AF_INET, SOCK_DGRAM)
         self.UDPSock.bind(self.addr)
-        # run
+        # in client_node
+            # subscribe to odom topic
+            # in subscribe callback:
+                # pull out just the info we need (pose probably)
+                # pickle it using pickle.dumps(obj_to_pickle)
+                # store pickle in global variable
+            # in main loop:
+                # send pickle string through the UDP socket to the server at some interval
+        # in server_node
+            # have loop that listens to client_node
+                # when message received, de-pickle using pickle.loads(string_to_depickle)
+                # store in global variable
+            # probably create rviz marker from pose of other robot and publish to topic 
         
     def run(self):
         print "Waiting to receive messages..."

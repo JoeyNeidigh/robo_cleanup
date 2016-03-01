@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 import rospy
 import os
+import pickle
 from socket import *
 
 class ClientNode():
     def __init__(self):
-        host = "127.0.0.1" # ip of server
+        host = "134.126.125.125" # ip of server
         port = 13000
         self.addr = (host, port)
         self.UDPSock = socket(AF_INET, SOCK_DGRAM)
