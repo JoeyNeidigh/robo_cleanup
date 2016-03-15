@@ -1,14 +1,12 @@
 <launch>
 
   <!-- Read Required Command Line Arguments: -->
-  <!--arg name="initial_pose" default="$(find robo_cleanup)/data/initial_pose.yaml"-->
-  <arg name="map_file" default="$(find robo_cleanup)/data/corner_map.yaml"/>
+  <arg name="initial_pose" default="$(find robo_cleanup)/data/initial_pose.yaml"/>
+  <arg name="map_file" default="$(find robo_cleanup)/data/map.yaml"/>
 
   <!-- Load initial pose parameters from yaml file: -->
   <rosparam command="load" file="$(arg initial_pose)" />
   <include file="$(find turtlebot_bringup)/launch/minimal.launch" />
-
-  <node pkg="sound_play" name="sound" type="soundplay_node.py"/>
 
   <node name="ar_pose" pkg="ar_pose" type="ar_single" respawn="false"
     output="screen">
@@ -38,7 +36,7 @@
   <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
 
   <include file="$(find robo_cleanup)/launch/includes/amcl.launch.xml">
-     <--arg name="initial_pose" value="$(arg initial_pose)" -->
+     <arg name="initial_pose" value="$(arg initial_pose)"/>
   </include>
 
 
