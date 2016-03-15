@@ -6,14 +6,6 @@ from socket import *
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import PoseWithCovariance
 
-        # in client_node
-            # subscribe to odom topic
-            # in subscribe callback:
-                # pull out just the info we need (pose probably)
-                # pickle it using pickle.dumps(obj_to_pickle)
-                # store pickle in global variable
-            # in main loop:
-                # send pickle string through the UDP socket to the server at some interval
 class ClientNode():
     def __init__(self):
         rospy.init_node('client_node')
@@ -23,20 +15,22 @@ class ClientNode():
         self.UDPSock = socket(AF_INET, SOCK_DGRAM)
         self.pickled_str = ""
         rospy.Subscriber('/odom', Odometry, self.odom_callback)
+        rospy.Subscriber('mess', PoseWithCovariance, pose_callback)
 
-        rate = rospy.Rate(1)
-        while not rospy.is_shutdown():
-            data = self.pickled_str
-            self.UDPSock.sendto(data, self.addr)
-            if data == "exit":
-                break
-            rate.sleep()
+        self.rate = rospy.Rate(1)
 
-        self.UDPSock.close()
-        os._exit(0)
+        #self.UDPSock.close()
+        #os._exit(0)
 
     def odom_callback(self, odom_msg):
-        self.pickled_str = pickle.dumps(odom_msg.pose)
+        data = "0" + pickle.dumps(odom_msg.pose)
+        self.UDPSock.sendto(data, self.addr)
+        self.rate.sleep()
+
+    def pose_callback(self, pose_msg):
+        data = "1" + pickle.dumps(pose_msg)
+        self.UDPSock.sendto(data, self.addr)
+        self.rate.sleep()
         
 if __name__ == "__main__":
     ClientNode()
