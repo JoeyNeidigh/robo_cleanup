@@ -34,7 +34,8 @@ class ClientNode():
         #os._exit(0)
 
     def odom_callback(self, odom_msg):
-        data = pickle.dumps(odom_msg.pose)
+        a = [odom_msg.pose.pose.position.x, odom_msg.pose.pose.position.y]
+        data = pickle.dumps(a)
         self.odom_UDPSock.sendto(data, self.odom_addr)
         self.rate.sleep()
 
