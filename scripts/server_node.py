@@ -3,7 +3,7 @@ import rospy
 import pickle
 import os
 from socket import *
-from geometry_msgs.msg import Pose
+from geometry_msgs.msg import Pose, PoseWithCovariance
 
 
 class ServerNode():

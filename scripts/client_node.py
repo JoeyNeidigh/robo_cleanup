@@ -9,24 +9,22 @@ from geometry_msgs.msg import PoseWithCovariance
 class ClientNode():
     def __init__(self):
         rospy.init_node('client_node')
-        host = "127.0.0.1" # ip of server
+        host = "134.126.125.125" # ip of server
 
-        odom_buf = 1024
         odom_port = 13000
         self.odom_addr = (host, odom_port)
-        odom_UDPSock = socket(AF_INET, SOCK_DGRAM)
-        self.odom_UDPSock.bind(odom_addr)
+        self.odom_UDPSock = socket(AF_INET, SOCK_DGRAM)
+        self.odom_UDPSock.bind(self.odom_addr)
 
-        mess_buf = 1024
         mess_port = 13001
         self.mess_addr = (host, mess_port)
-        mess_UDPSock = socket(AF_INET, SOCK_DGRAM)
-        self.mess_UDPSock.bind(mess_addr)
+        self.mess_UDPSock = socket(AF_INET, SOCK_DGRAM)
+        self.mess_UDPSock.bind(self.mess_addr)
 
         self.pickled_str = ""
 
         rospy.Subscriber('/odom', Odometry, self.odom_callback)
-        rospy.Subscriber('/mess', PoseWithCovariance, pose_callback)
+        rospy.Subscriber('/mess', PoseWithCovariance, self.pose_callback)
 
         self.rate = rospy.Rate(1)
 

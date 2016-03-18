@@ -35,6 +35,8 @@ class RoboCleanupNode(object):
                                             queue_size=10)
 
         self.map_msg = None
+        self.position = None
+        self.searching = False
         self.cur_mess = None
         self.tf_listener = tf.TransformListener()
 
@@ -44,16 +46,35 @@ class RoboCleanupNode(object):
 
         self.map = map_utils.Map(self.map_msg)
 
+        while (self.position is None and not rospy.is_shutdown()):
+            rospy.loginfo("Waiting for position...")
+            rospy.sleep(.1)
+        
+        self.safezone = self.position
+
+
         while not rospy.is_shutdown():
             #Search the space randomly eventually will do it methodically
-            self.random_search()
+            if not self.searching:
+                self.random_search()
 
             if (self.cur_mess is not None):
-                self.cleanup(self.cur_mess)
-            
+                self.drive_to_mess(self.cur_mess)
+                #Take mess to safezone
+                self.take_to_safezone()         
+                #return searching
+                self.cur_mess = None  
+                self.searching = False      
     
+            
+    def take_to_safezone(self):
+        goal = self.goal_message(self.safezone.position.x, self.safezone.position.y, 0)
+        self.go_to_point(goal)
+        self.ac.wait_for_result() 
 
-    def cleanup(self, mess):
+        
+
+    def drive_to_mess(self, mess):
         # stop moving
         self.ac.cancel_goal()
         marker_point = PointStamped()
@@ -61,7 +82,7 @@ class RoboCleanupNode(object):
         marker_point.header.stamp = rospy.get_rostime()
         marker_point.point.x = 0
         marker_point.point.y = 0
-        marker_point.point.z = .5
+        marker_point.point.z = .3
         # transformation to rotate the robot to face the mess
         quat = (self.mark_angles.orientation.x,
                 self.mark_angles.orientation.y,
@@ -86,7 +107,9 @@ class RoboCleanupNode(object):
         goal = self.goal_message(marker_point.point.x,
                                  marker_point.point.y, theta)
         self.go_to_point(goal)
-        self.ac.wait_for_result()          
+        self.ac.wait_for_result() 
+
+
             
     def random_search(self):
         x_goal = 100000
@@ -101,7 +124,7 @@ class RoboCleanupNode(object):
         goal = self.goal_message(x_goal, y_goal, 0)
         
         self.go_to_point(goal)
-
+        self.searching = True
         # Wait until the server reports a result.
         #self.ac.wait_for_result()
         #rospy.loginfo(self.ac.get_goal_status_text())
