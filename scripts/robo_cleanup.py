@@ -15,10 +15,16 @@ from nav_msgs.msg import OccupancyGrid
 from actionlib_msgs.msg import *
 from visualization_msgs.msg import Marker
 from sound_play.msg import SoundRequest
+from geometry_msgs.msg import Twist
+
+"""
+Might Use later on for a state machine
 
 def enum(**enums):
-    """ Enumerated type for the states """
+    Enumerated type for the states
     return type('Enum', (), enums)
+"""
+
 
 class RoboCleanupNode(object):
     def __init__(self):
@@ -33,6 +39,11 @@ class RoboCleanupNode(object):
 
         self.marker_pub = rospy.Publisher('mess_marker', Marker,
                                             queue_size=10)
+
+        #Add a publisher to publish Twists message to the base to back up robo
+
+        #Add a subscriber that listens for the list of mess objects
+        #Add a publisher to publish different mess objects it sees in its own view
 
         self.map_msg = None
         self.position = None
@@ -50,14 +61,18 @@ class RoboCleanupNode(object):
             rospy.loginfo("Waiting for position...")
             rospy.sleep(.1)
         
+	    #Initially Sets the safezone to just the start location 
         self.safezone = self.position
-
+   
 
         while not rospy.is_shutdown():
             #Search the space randomly eventually will do it methodically
             if not self.searching:
                 self.random_search()
 
+            # Just does the current mess it sees 
+            # Need to have it search through a shared list of the mess objects and
+            # have it choose a object with an algorithm 
             if (self.cur_mess is not None):
                 self.drive_to_mess(self.cur_mess)
                 #Take mess to safezone
@@ -71,7 +86,7 @@ class RoboCleanupNode(object):
         goal = self.goal_message(self.safezone.position.x, self.safezone.position.y, 0)
         self.go_to_point(goal)
         self.ac.wait_for_result() 
-
+        #Send twist messsage to back up a foot to drop off the mess
         
 
     def drive_to_mess(self, mess):
@@ -131,7 +146,7 @@ class RoboCleanupNode(object):
 
 
     def go_to_point(self, goal):
-        """Sends the robot to a give goal point"""
+        """Sends the robot to a given goal point"""
         rospy.loginfo("Waiting for server.")
         self.ac.wait_for_server()
         self.ac.send_goal(goal)
