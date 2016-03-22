@@ -9,17 +9,7 @@ from geometry_msgs.msg import PoseWithCovariance
 class ClientNode():
     def __init__(self):
         rospy.init_node('client_node')
-        host = "134.126.125.125" # ip of server
 
-        odom_port = 13000
-        self.odom_addr = (host, odom_port)
-        self.odom_UDPSock = socket(AF_INET, SOCK_DGRAM)
-        self.odom_UDPSock.bind(self.odom_addr)
-
-        mess_port = 13001
-        self.mess_addr = (host, mess_port)
-        self.mess_UDPSock = socket(AF_INET, SOCK_DGRAM)
-        self.mess_UDPSock.bind(self.mess_addr)
         host = "134.126.125.125" # ip of server
         port = 13000
         self.addr = (host, port)
@@ -30,11 +20,7 @@ class ClientNode():
             rospy.loginfo("FAILED TO CREATE SOCKET")
             sys.exit()
 
-        self.pickled_str = ""
-
         rospy.Subscriber('/odom', Odometry, self.odom_callback)
-        rospy.Subscriber('/mess', PoseWithCovariance, self.pose_callback)
-        rospy.Subscriber('/mess', 
 
         self.rate = rospy.Rate(1)
 
