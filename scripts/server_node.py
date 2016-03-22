@@ -3,6 +3,9 @@ import rospy
 import pickle
 import os
 from socket import *
+import sys
+import socket
+import time
 from geometry_msgs.msg import Pose, PoseWithCovariance
 
 
@@ -14,34 +17,35 @@ class ServerNode():
 
         host = ""
 
-        odom_buf = 1024
-        odom_port = 13000
-        odom_addr = (host, odom_port)
-        odom_UDPSock = socket(AF_INET, SOCK_DGRAM)
-        odom_UDPSock.bind(odom_addr)
+        port = 13000
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        except:
+            rospy.loginfo("FAILED TO  CREATE SOCKET")
+            sys.exit()
 
-        mess_buf = 1024
-        mess_port = 13001
-        mess_addr = (host, mess_port)
-        mess_UDPSock = socket(AF_INET, SOCK_DGRAM)
-        mess_UDPSock.bind(mess_addr)
+        try:
+            s.bind(("", port))
+        except:
+            rospy.loginfo("FAILED TO BIND")
+            sys.exit()
 
         teammate_pose = Pose()
-        
-        while True:
-            (odom_data, odom_addr) = odom_UDPSock.recvfrom(odom_buf)
-            depickled_odom = pickle.loads(odom_data)
-            teammate_pose.x = depickled_odom[0]
-            teammate_pose.y = depickled_odom[1]
-            teammate_marker_pub.publish(teammate_odom)
-            rospy.loginfo(depickled_odom)
-            
-            (mess_data, mess_addr) = mess_UDPSock.recvfrom(mess_buf)
-            depickled_mess = pickle.loads(mess_data)
-            mess_pub.publish(depickled_mess)               
+        rospy.loginfo("SERVER SETUP COMPLETE")
 
-        self.UDPSock.close()
-        os._exit(0)
+        while not rospy.is_shutdown():
+            try:
+                data, addr = s.recvfrom(1024)
+                z = pickle.loads(data)
+                teammate_pose.position.x = z[0]
+                teammate_pose.position.y = z[1]
+                teammate_marker_pub.publish(teammate_pose)
+                rospy.loginfo(teammate_pose)
+            except Exception as e:
+                s.close()
+                rospy.loginfo("ERROR. CLOSING SOCKET")
+
+
                 
 if __name__ == "__main__":
     ServerNode()
