@@ -23,6 +23,7 @@
   </node> 
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find robo_cleanup)/data/custom.rviz"/>
   <node name="robo_cleanup" pkg="robo_cleanup" type="robo_cleanup.py" output="screen"/>
+  <node name="client_node" pkg="robo_cleanup" type="client_node.py" output="screen"/>
 
 
   <include file="$(find turtlebot_bringup)/launch/3dsensor.launch">
