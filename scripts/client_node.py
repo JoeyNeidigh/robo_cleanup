@@ -12,32 +12,32 @@ class ClientNode():
 
         host = "134.126.125.125" # ip of server
         port = 13000
-        self.addr = (host, port)
+        addr = (host, port)
 
         try:
-            self.s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         except:
             rospy.loginfo("FAILED TO CREATE SOCKET")
             sys.exit()
 
         rospy.Subscriber('/odom', Odometry, self.odom_callback)
-
+        self.odom = (0,0)
         self.rate = rospy.Rate(1)
 
         rospy.loginfo("CLIENT SETUP COMPLETE")
         
-        rospy.spin()
+        while rospy.is_shutdown():
+            a = self.odom
+            data = pickle.dumps(a)
+            try:
+                s.sendto(data, addr)
+            except:
+                s.close()
+                rospy.loginfo("ERROR. CLOSING SOCKET")
 
     def odom_callback(self, odom_msg):
-        a = [odom_msg.pose.pose.position.x, odom_msg.pose.pose.position.y]
-        data = pickle.dumps(a)
-        try:
-            self.s.sendto(data, self.addr)
-        except:
-            s.close()
-            rospy.loginfo("ERROR. CLOSING SOCKET")
+        self.odom = [odom_msg.pose.pose.position.x, odom_msg.pose.pose.position.y]
             
-        #self.rate.sleep()
         
 if __name__ == "__main__":
     ClientNode()
