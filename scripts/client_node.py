@@ -4,7 +4,7 @@ import sys
 import pickle
 import socket
 from nav_msgs.msg import Odometry
-from geometry_msgs.msg import PoseWithCovariance
+from geometry_msgs.msg import PoseWithCovarianceStamped
 
 class ClientNode():
     def __init__(self):
@@ -20,14 +20,14 @@ class ClientNode():
             rospy.loginfo("FAILED TO CREATE SOCKET")
             sys.exit()
 
-        rospy.Subscriber('/odom', Odometry, self.odom_callback)
-        self.odom = (0,0)
+        rospy.Subscriber('/amcl_pose', PoseWithCovarianceStamped, self.amcl_callback)
+        self.position = (0,0)
         rate = rospy.Rate(1)
 
         rospy.loginfo("CLIENT SETUP COMPLETE")
         
         while not rospy.is_shutdown():
-            a = self.odom
+            a = self.position
             data = pickle.dumps(a)
             try:
                 s.sendto(data, addr)
@@ -37,8 +37,8 @@ class ClientNode():
 
             rate.sleep()
 
-    def odom_callback(self, odom_msg):
-        self.odom = [odom_msg.pose.pose.position.x, odom_msg.pose.pose.position.y]
+    def amcl_callback(self, amcl_msg):
+        self.position = [amcl_msg.pose.pose.position.x, amcl_msg.pose.pose.position.y]
             
         
 if __name__ == "__main__":
