@@ -31,6 +31,8 @@ class ClientNode():
             data = pickle.dumps(a)
             try:
                 s.sendto(data, addr)
+                response, rec_addr = s.recvfrom(1024)
+                rospy.loginfo(response)
             except:
                 s.close()
                 rospy.loginfo("ERROR. CLOSING SOCKET")
