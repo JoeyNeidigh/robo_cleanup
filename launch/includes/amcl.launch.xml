@@ -4,7 +4,7 @@
   <arg name="odom_frame_id"   default="odom"/>
   <arg name="base_frame_id"   default="base_footprint"/>
   <arg name="global_frame_id" default="map"/>
-  <arg name="initial_pose" default="$(find zeta_rescue)/data/initial_pose.yaml"/>
+  <arg name="initial_pose" default="$(find robo_cleanup)/data/initial_pose.yaml"/>
 
   <node pkg="amcl" type="amcl" name="amcl">
     <rosparam command="load" file="$(arg initial_pose)" />
