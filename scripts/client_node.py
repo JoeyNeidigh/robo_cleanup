@@ -22,7 +22,7 @@ class ClientNode():
 
         rospy.Subscriber('/odom', Odometry, self.odom_callback)
         self.odom = (0,0)
-        self.rate = rospy.Rate(1)
+        rate = rospy.Rate(1)
 
         rospy.loginfo("CLIENT SETUP COMPLETE")
         
@@ -34,6 +34,8 @@ class ClientNode():
             except:
                 s.close()
                 rospy.loginfo("ERROR. CLOSING SOCKET")
+
+            rate.sleep()
 
     def odom_callback(self, odom_msg):
         self.odom = [odom_msg.pose.pose.position.x, odom_msg.pose.pose.position.y]
