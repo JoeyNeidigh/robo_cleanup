@@ -26,7 +26,7 @@ class ClientNode():
 
         rospy.loginfo("CLIENT SETUP COMPLETE")
         
-        while rospy.is_shutdown():
+        while not rospy.is_shutdown():
             a = self.odom
             data = pickle.dumps(a)
             try:
