@@ -30,7 +30,7 @@ class RoboCleanupNode(object):
         rospy.init_node('robo_cleanup')
 
         self.ac = actionlib.SimpleActionClient("move_base", MoveBaseAction)
-
+        self.map_msg = None
         rospy.Subscriber('map', OccupancyGrid, self.map_callback)
         rospy.Subscriber('/visualization_marker', Marker, self.marker_callback)
         rospy.Subscriber('/amcl_pose', PoseWithCovarianceStamped,
@@ -47,14 +47,13 @@ class RoboCleanupNode(object):
         #Add a publisher to publish different mess objects it sees in its own view
         self.mess = rospy.Publisher('/mess', Pose, queue_size=10)
 
-        self.map_msg = None
-        self.map_flag = False
+
         self.position = None
         self.searching = False
         self.cur_mess = None
         self.tf_listener = tf.TransformListener()
 
-        while not self.map_flag and not rospy.is_shutdown():
+        while self.map_msg is None and not rospy.is_shutdown():
             rospy.loginfo("Waiting for map...")
             rospy.sleep(1)
 
@@ -207,7 +206,7 @@ class RoboCleanupNode(object):
     def map_callback(self, map_msg):
         """ map_msg will be of type OccupancyGrid """
         self.map_msg = map_msg
-        self.map_flag = True
+
 
     def position_callback(self, pos):
         """ Saves the current position of the robot"""
