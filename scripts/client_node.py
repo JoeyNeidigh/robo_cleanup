@@ -21,7 +21,8 @@ class ClientNode():
             sys.exit()
 
         rospy.Subscriber('/amcl_pose', PoseWithCovarianceStamped, self.amcl_callback)
-        self.position = (0,0)
+        robot_id = 0
+        self.position = [robot_id,0,0]
         rate = rospy.Rate(5)
 
         rospy.loginfo("CLIENT SETUP COMPLETE")

@@ -31,23 +31,22 @@ class CommandControl():
             rospy.loginfo("FAILED TO BIND")
             sys.exit()
 
-        teammate_pose = Pose()
+        robot_pose = Pose()
         rospy.loginfo("SERVER SETUP COMPLETE")
 
         while not rospy.is_shutdown():
             try:
                 data, addr = s.recvfrom(1024)
                 z = pickle.loads(data)
-                teammate_pose.position.x = z[0]
-                teammate_pose.position.y = z[1]
-                
-                rospy.loginfo(teammate_pose)
+                robot_id = z[0]
+                robot_pose.position.x = z[1]
+                robot_pose.position.y = z[2]
             except Exception as e:
                 s.close()
                 rospy.loginfo("ERROR. CLOSING SOCKET")
-            teammate_marker_pub.publish(self.make_marker(teammate_pose))
+            teammate_marker_pub.publish(self.make_marker(robot_pose, robot_id))
 
-    def make_marker(self, pose):
+    def make_marker(self, pose, robot_id):
         """ Create a Marker message with the given x,y coordinates """
         m = Marker()
         m.header.stamp = rospy.Time.now()
@@ -58,10 +57,15 @@ class CommandControl():
         m.action = m.ADD
         m.pose.position.x = pose.position.x
         m.pose.position.y = pose.position.y
-        m.scale.x = m.scale.y = m.scale.z = .35   
-        m.color.r = 255
-        m.color.g = 0
-        m.color.b = 0
+        m.scale.x = m.scale.y = m.scale.z = .35 
+        if robot_id == 0:
+            m.color.r = 255
+            m.color.g = 0
+            m.color.b = 0
+        else:
+            m.color.r = 0
+            m.color.g = 0
+            m.color.b = 255
         m.color.a = 1.0
         return m
                 
