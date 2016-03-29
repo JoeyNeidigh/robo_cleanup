@@ -59,7 +59,7 @@ class RoboCleanupNode(object):
         #    rospy.sleep(.1)
 
         self.map = map_utils.Map(self.map_msg)
-
+        rospy.loginfo("HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         while (self.position is None and not rospy.is_shutdown()):
             rospy.loginfo("Waiting for position...")
             rospy.sleep(.1)

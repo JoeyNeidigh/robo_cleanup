@@ -40,7 +40,7 @@ class CommandControl():
                 z = pickle.loads(data)
                 teammate_pose.position.x = z[0]
                 teammate_pose.position.y = z[1]
-                teammate_marker_pub.publish(make_marker(teammate_pose))
+                #teammate_marker_pub.publish(make_marker(teammate_pose))
                 rospy.loginfo(teammate_pose)
             except Exception as e:
                 s.close()
