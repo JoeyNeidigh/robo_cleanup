@@ -6,6 +6,8 @@ import socket
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import PoseWithCovarianceStamped
 
+# This node will periodically send its position to the CC.
+# It will also send a list of the messes that it has discovered to the CC.
 class ClientNode():
     def __init__(self):
         rospy.init_node('client_node')
@@ -38,6 +40,7 @@ class ClientNode():
 
             rate.sleep()
 
+    # Callback for 'amcl_pose' topic
     def amcl_callback(self, amcl_msg):
         self.position[1] = amcl_msg.pose.pose.position.x
         self.position[2] = amcl_msg.pose.pose.position.y

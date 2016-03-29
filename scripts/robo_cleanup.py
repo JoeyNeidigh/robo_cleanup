@@ -25,7 +25,6 @@ def enum(**enums):
     return type('Enum', (), enums)
 """
 
-
 class RoboCleanupNode(object):
     def __init__(self):
         rospy.init_node('robo_cleanup')
@@ -70,7 +69,7 @@ class RoboCleanupNode(object):
 
         while not rospy.is_shutdown():
             #Search the space randomly eventually will do it methodically
-            if not self.searching:
+            if not self.searching or self.ac.get_state() is 3 or self.ac.get_state() is 4:
                 self.random_search()
 
             # Just does the current mess it sees 
@@ -129,8 +128,6 @@ class RoboCleanupNode(object):
                                  marker_point.point.y, theta)
         self.go_to_point(goal)
         self.ac.wait_for_result() 
-
-
             
     def random_search(self):
         x_goal = 100000
@@ -149,7 +146,6 @@ class RoboCleanupNode(object):
         # Wait until the server reports a result.
         #self.ac.wait_for_result()
         #rospy.loginfo(self.ac.get_goal_status_text())
-
 
     def go_to_point(self, goal):
         """Sends the robot to a given goal point"""
@@ -173,24 +169,6 @@ class RoboCleanupNode(object):
         goal.target_pose.pose.orientation.z = quat[2]
         goal.target_pose.pose.orientation.w = quat[3]
         return goal
-
-    def make_marker(self, x, y, size, r, g, b, ID, ns):
-        """ Create a Marker message with the given x,y coordinates """
-        m = Marker()
-        m.header.stamp = rospy.Time.now()
-        m.header.frame_id = 'map'
-        m.ns = ns
-        m.id = ID
-        m.type = m.SPHERE
-        m.action = m.ADD
-        m.pose.position.x = x
-        m.pose.position.y = y
-        m.scale.x = m.scale.y = m.scale.z = size    
-        m.color.r = r
-        m.color.g = g
-        m.color.b = b
-        m.color.a = 1.0
-        return m
  
     def marker_callback(self, marker):
         """ The marker callback to see the ar_markers"""
@@ -233,7 +211,6 @@ class RoboCleanupNode(object):
     def position_callback(self, pos):
         """ Saves the current position of the robot"""
         self.position = pos.pose.pose
-
 
 if __name__ == "__main__":
     RoboCleanupNode()

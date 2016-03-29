@@ -9,7 +9,10 @@ import time
 from geometry_msgs.msg import Pose, PoseWithCovariance
 from visualization_msgs.msg import Marker
 
-# Command and control node for robo_cleanup
+# Command and control node for robo_cleanup.
+# Aggregates the location of all robots and their corresponding messes.
+# Divides up the messes among robots once it has collected mess lists from each robot
+# Publishes to 'teammate_marker' and 'mess' topics for display in rviz
 class CommandControl():
     def __init__(self):
         rospy.init_node('command_control')
@@ -46,6 +49,8 @@ class CommandControl():
                 rospy.loginfo(e)
             teammate_marker_pub.publish(self.make_marker(robot_pose, robot_id))
 
+    # Create a marker for a robot whos position is stored in 'pose' and whose
+    # ID is stored in 'robot_id'
     def make_marker(self, pose, robot_id):
         """ Create a Marker message with the given x,y coordinates """
         m = Marker()
