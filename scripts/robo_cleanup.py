@@ -48,12 +48,13 @@ class RoboCleanupNode(object):
         self.mess = rospy.Publisher('/mess', Pose, queue_size=10)
 
         self.map_msg = None
+        self.map_flag = False
         self.position = None
         self.searching = False
         self.cur_mess = None
         self.tf_listener = tf.TransformListener()
 
-        while self.map_msg is None and not rospy.is_shutdown():
+        while not self.map_flag and not rospy.is_shutdown():
             rospy.loginfo("Waiting for map...")
             rospy.sleep(.1)
 
@@ -204,9 +205,9 @@ class RoboCleanupNode(object):
         self.cur_mess = marker_point.point
 
     def map_callback(self, map_msg):
-        rospy.loginfo("HOIJWEOGJW")
         """ map_msg will be of type OccupancyGrid """
         self.map_msg = map_msg
+        self.map_flag = True
 
     def position_callback(self, pos):
         """ Saves the current position of the robot"""
