@@ -39,7 +39,8 @@ class ClientNode():
             rate.sleep()
 
     def amcl_callback(self, amcl_msg):
-        self.position = [amcl_msg.pose.pose.position.x, amcl_msg.pose.pose.position.y]
+        self.position[1] = amcl_msg.pose.pose.position.x
+        self.position[2] = amcl_msg.pose.pose.position.y
             
         
 if __name__ == "__main__":

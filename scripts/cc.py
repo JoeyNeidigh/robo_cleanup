@@ -32,7 +32,7 @@ class CommandControl():
             sys.exit()
 
         robot_pose = Pose()
-        rospy.loginfo("SERVER SETUP COMPLETE")
+        rospy.loginfo("COMMAND AND CONTROL ONLINE")
 
         while not rospy.is_shutdown():
             try:
@@ -43,7 +43,7 @@ class CommandControl():
                 robot_pose.position.y = z[2]
             except Exception as e:
                 s.close()
-                rospy.loginfo("ERROR. CLOSING SOCKET")
+                rospy.loginfo(e)
             teammate_marker_pub.publish(self.make_marker(robot_pose, robot_id))
 
     def make_marker(self, pose, robot_id):
@@ -52,7 +52,7 @@ class CommandControl():
         m.header.stamp = rospy.Time.now()
         m.header.frame_id = 'map'
         m.ns = "robots"
-        m.id = 0
+        m.id = robot_id
         m.type = m.SPHERE
         m.action = m.ADD
         m.pose.position.x = pose.position.x
