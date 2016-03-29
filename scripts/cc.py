@@ -40,11 +40,12 @@ class CommandControl():
                 z = pickle.loads(data)
                 teammate_pose.position.x = z[0]
                 teammate_pose.position.y = z[1]
-                #teammate_marker_pub.publish(make_marker(teammate_pose))
+                
                 rospy.loginfo(teammate_pose)
             except Exception as e:
                 s.close()
                 rospy.loginfo("ERROR. CLOSING SOCKET")
+            teammate_marker_pub.publish(self.make_marker(teammate_pose))
 
     def make_marker(self, pose):
         """ Create a Marker message with the given x,y coordinates """

@@ -22,7 +22,7 @@ class ClientNode():
 
         rospy.Subscriber('/amcl_pose', PoseWithCovarianceStamped, self.amcl_callback)
         self.position = (0,0)
-        rate = rospy.Rate(1)
+        rate = rospy.Rate(5)
 
         rospy.loginfo("CLIENT SETUP COMPLETE")
         

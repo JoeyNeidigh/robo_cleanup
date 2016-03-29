@@ -1,7 +1,7 @@
 <launch>
   <arg name="map_file" default="$(find robo_cleanup)/data/map.yaml"/>
 
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find robo_cleanup)/data/custom.rviz"/>
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find robo_cleanup)/data/cc.rviz"/>
   <node name="command_control" type="cc.py" pkg="robo_cleanup" output="screen"/>
 
   <!-- Map server -->
