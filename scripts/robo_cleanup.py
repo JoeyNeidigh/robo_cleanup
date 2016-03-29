@@ -56,7 +56,7 @@ class RoboCleanupNode(object):
 
         while not self.map_flag and not rospy.is_shutdown():
             rospy.loginfo("Waiting for map...")
-            rospy.sleep(.1)
+            rospy.sleep(1)
 
         self.map = map_utils.Map(self.map_msg)
         
