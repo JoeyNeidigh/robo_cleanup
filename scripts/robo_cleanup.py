@@ -54,9 +54,9 @@ class RoboCleanupNode(object):
         self.cur_mess = None
         self.tf_listener = tf.TransformListener()
 
-        while self.map_msg is None and not rospy.is_shutdown():
-            rospy.loginfo("Waiting for map...")
-            rospy.sleep(.1)
+        #while self.map_msg is None and not rospy.is_shutdown():
+        #    rospy.loginfo("Waiting for map...")
+        #    rospy.sleep(.1)
 
         self.map = map_utils.Map(self.map_msg)
 
