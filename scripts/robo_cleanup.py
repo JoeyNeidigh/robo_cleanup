@@ -45,7 +45,7 @@ class RoboCleanupNode(object):
         #Add a subscriber that listens for the list of mess objects
         
         #Add a publisher to publish different mess objects it sees in its own view
-        self.mess = rospy.Publisher('/mess', Pose, queue_size=10)
+        self.mess = rospy.Publisher('/mess', Marker, queue_size=10)
 
         self.mess_id = 1
         self.position = None
@@ -66,7 +66,6 @@ class RoboCleanupNode(object):
 	    #Initially Sets the safezone to just the start location 
         self.safezone = self.position
    
-
         while not rospy.is_shutdown():
             #Search the space randomly eventually will ask CC for locations to go to 
             if not self.searching or self.ac.get_state() is 3 or self.ac.get_state() is 4:
@@ -85,14 +84,14 @@ class RoboCleanupNode(object):
     
             
     def take_to_safezone(self):
-	mv_back = Twist()
-	mv_back.linear.x = -.5
+	    mv_back = Twist()
+	    mv_back.linear.x = -.5
 
         goal = self.goal_message(self.safezone.position.x, self.safezone.position.y, 0)
         self.go_to_point(goal)
         self.ac.wait_for_result() 
         #Send twist messsage to back up a foot to drop off the mess
-	self.mv_base.publish(mv_back)      
+	    self.mv_base.publish(mv_back)      
 
     def drive_to_mess(self, mess):
         # stop moving
@@ -129,8 +128,7 @@ class RoboCleanupNode(object):
         self.go_to_point(goal)
         self.ac.wait_for_result() 
 
-        mess_marker = self.make_marker(marker_point.point.x, marker_point.point.y, .25, 255, 0, 0,
-                                                self.mess_id, 'mess')
+        mess_marker = self.make_marker(marker_point.point.x, marker_point.point.y, .25, 255, 0, 0, self.mess_id, 'mess')
         self.mess_id += 1
         self.marker_pub.publish(mess_marker)
             
@@ -148,9 +146,6 @@ class RoboCleanupNode(object):
         
         self.go_to_point(goal)
         self.searching = True
-        # Wait until the server reports a result.
-        #self.ac.wait_for_result()
-        #rospy.loginfo(self.ac.get_goal_status_text())
 
     def go_to_point(self, goal):
         """Sends the robot to a given goal point"""

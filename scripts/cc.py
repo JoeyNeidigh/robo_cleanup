@@ -16,7 +16,6 @@ from visualization_msgs.msg import Marker
 class CommandControl():
     def __init__(self):
         rospy.init_node('command_control')
-        mess_pub = rospy.Publisher('mess', PoseWithCovariance, queue_size=10)
         teammate_marker_pub = rospy.Publisher('teammate_marker', Marker, queue_size=10)
 
         # Set up port for incomming traffic

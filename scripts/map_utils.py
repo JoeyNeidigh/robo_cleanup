@@ -86,7 +86,7 @@ class Map(object):
         """
         Initialize a default numpy array.
         """
-        self.grid = np.zeros((self.height, self.width))
+        self.grid = np.zeros((self.height, self.width), np.float32)
 
     def _numpy_to_data(self):
         """
@@ -163,5 +163,3 @@ class Map(object):
             return self.grid[row, col]
         else:
             return float('nan')
-
-
