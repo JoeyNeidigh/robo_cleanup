@@ -70,6 +70,7 @@ class RoboCleanupNode(object):
             #Search the space randomly eventually will ask CC for locations to go to 
             if not self.searching or self.ac.get_state() is 3 or self.ac.get_state() is 4:
                 self.random_search()
+            rospy.loginfo("1111111111111111111111")
 
             # Just does the current mess it sees 
             # Need to have it search through a shared list of the mess objects and

@@ -22,10 +22,13 @@ class MapNode():
         occmap = map_utils.Map(self.map_msg) 
 
         seenmap = map_utils.Map(width = self.map_msg.info.width, height = self.map_msg.info.height, resolution = self.map_msg.info.resolution, origin_x = self.map_msg.info.origin.position.x, origin_y = self.map_msg.info.origin.position.y) 
+
+        while (self.pos is None and not rospy.is_shutdown()):
+            rospy.loginfo("Waiting for position...")
+            rospy.sleep(.1) 
         
-
+        # set initial values of seenmap. -1 = unknown, 0 = unseen, 1 = seen
         it = np.nditer(occmap.grid, flags=['multi_index'])
-
         while not it.finished:
             if it[0] < 0:
                 seenmap.grid[it.multi_index] = -1
@@ -34,20 +37,14 @@ class MapNode():
             else:
                 seenmap.grid[it.multi_index] = 1
             it.iternext()
-                
-
-        img = cv2.cvtColor(seenmap.grid.astype(np.float32), cv2.COLOR_GRAY2BGR)
-        cv2.imshow("MAP", img)
-        cv2.waitKey(1000)
-     
-        while (self.pos is None and not rospy.is_shutdown()):
-            rospy.loginfo("Waiting for position...")
-            rospy.sleep(.1)   
-
 
         while not rospy.is_shutdown():
-            # if position and stuff it sees is near something mark as seen
-            seenmap.set_cell(self.pos.x, self,pos.y, 1)
+            seenmap.grid[occmap._cell_index(self.pos.position.x, self.pos.position.y)] = 1
+            img = cv2.cvtColor(seenmap.grid.astype(np.float32), cv2.COLOR_GRAY2BGR)
+            cv2.imshow("MAP", img)
+            cv2.waitKey(100)
+     
+  
 
     def position_callback(self, pos_msg):
         self.pos = pos_msg.pose.pose
