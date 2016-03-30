@@ -47,7 +47,7 @@ class RoboCleanupNode(object):
         #Add a publisher to publish different mess objects it sees in its own view
         self.mess = rospy.Publisher('/mess', Pose, queue_size=10)
 
-
+        self.mess_id = 1
         self.position = None
         self.searching = False
         self.cur_mess = None
@@ -68,7 +68,7 @@ class RoboCleanupNode(object):
    
 
         while not rospy.is_shutdown():
-            #Search the space randomly eventually will do it methodically
+            #Search the space randomly eventually will ask CC for locations to go to 
             if not self.searching or self.ac.get_state() is 3 or self.ac.get_state() is 4:
                 self.random_search()
 
@@ -92,7 +92,7 @@ class RoboCleanupNode(object):
         self.go_to_point(goal)
         self.ac.wait_for_result() 
         #Send twist messsage to back up a foot to drop off the mess
-	self.mv_base = mv_back       
+	self.mv_base.publish(mv_back)      
 
     def drive_to_mess(self, mess):
         # stop moving
@@ -128,6 +128,11 @@ class RoboCleanupNode(object):
                                  marker_point.point.y, theta)
         self.go_to_point(goal)
         self.ac.wait_for_result() 
+
+        mess_marker = self.make_marker(marker_point.point.x, marker_point.point.y, .25, 255, 0, 0,
+                                                self.mess_id, 'mess')
+        self.mess_id += 1
+        self.marker_pub.publish(mess_marker)
             
     def random_search(self):
         x_goal = 100000
@@ -202,6 +207,24 @@ class RoboCleanupNode(object):
             print("ERROR in marker_callback")
 
         self.cur_mess = marker_point.point
+
+    def make_marker(self, x, y, size, r, g, b, ID, ns):
+        """ Create a Marker message with the given x,y coordinates """
+        m = Marker()
+        m.header.stamp = rospy.Time.now()
+        m.header.frame_id = 'map'
+        m.ns = ns
+        m.id = ID
+        m.type = m.SPHERE
+        m.action = m.ADD
+        m.pose.position.x = x
+        m.pose.position.y = y
+        m.scale.x = m.scale.y = m.scale.z = size    
+        m.color.r = r
+        m.color.g = g
+        m.color.b = b
+        m.color.a = 1.0
+        return m
 
     def map_callback(self, map_msg):
         """ map_msg will be of type OccupancyGrid """
