@@ -63,14 +63,13 @@ class RoboCleanupNode(object):
             rospy.loginfo("Waiting for position...")
             rospy.sleep(.1)
         
-	    #Initially Sets the safezone to just the start location 
+        #Initially Sets the safezone to just the start location 
         self.safezone = self.position
    
         while not rospy.is_shutdown():
             #Search the space randomly eventually will ask CC for locations to go to 
             if not self.searching or self.ac.get_state() is 3 or self.ac.get_state() is 4:
                 self.random_search()
-            rospy.loginfo("1111111111111111111111")
 
             # Just does the current mess it sees 
             # Need to have it search through a shared list of the mess objects and
@@ -85,14 +84,14 @@ class RoboCleanupNode(object):
     
             
     def take_to_safezone(self):
-	    mv_back = Twist()
-	    mv_back.linear.x = -.5
+        mv_back = Twist()
+        mv_back.linear.x = -.5
 
         goal = self.goal_message(self.safezone.position.x, self.safezone.position.y, 0)
         self.go_to_point(goal)
         self.ac.wait_for_result() 
         #Send twist messsage to back up a foot to drop off the mess
-	    self.mv_base.publish(mv_back)      
+        self.mv_base.publish(mv_back)      
 
     def drive_to_mess(self, mess):
         # stop moving
