@@ -15,6 +15,7 @@ class MapNode():
         rospy.Subscriber('map', OccupancyGrid, self.map_callback)
         rospy.Subscriber('/amcl_pose', PoseWithCovarianceStamped,
                             self.position_callback)
+        seenmap_pub = rospy.Publisher('/seenmap', OccupancyGrid, queue_size=10)
 
         self.tf_listener = tf.TransformListener()
 
@@ -46,10 +47,6 @@ class MapNode():
             it.iternext()
 
         while not rospy.is_shutdown():
-            # convert from numpy array to cv2 image
-            img = cv2.cvtColor(seenmap.grid.astype(np.float32), cv2.COLOR_GRAY2BGR)
-            # mark location as seen
-            seenmap.grid[occmap._cell_index(self.pos.position.x, self.pos.position.y)] = 1
             # draw triangle
             pts = self.calc_triangle()
             one_row, one_col = occmap._cell_index(pts[0], pts[1])
@@ -59,10 +56,9 @@ class MapNode():
             triangle = np.array([[one_col, one_row],
                                  [two_col, two_row],
                                  [three_col, three_row]], np.int32)
-            cv2.fillConvexPoly(img, triangle, 1)
-            # display seenmap image to screen
-            cv2.imshow("MAP", img)
-            cv2.waitKey(10)
+            cv2.fillConvexPoly(seenmap.grid, triangle, 1)
+            # publish to /seenmap
+            seenmap_pub.publish(seenmap.to_message())
  
      
     def calc_triangle(self):
