@@ -46,19 +46,20 @@ class MapNode():
             it.iternext()
 
         while not rospy.is_shutdown():
+            # convert from numpy array to cv2 image
             img = cv2.cvtColor(seenmap.grid.astype(np.float32), cv2.COLOR_GRAY2BGR)
+            # mark location as seen
             seenmap.grid[occmap._cell_index(self.pos.position.x, self.pos.position.y)] = 1
-            # probably gonna need to use tf to find the final two points of the triangle
-            # just transform the points (x=1, y= +- .5) from the robot frame to map
-            # robot's position is the 3rd point of the triangle
-            # use cv2.fillConvexPoly to draw onto img
+            # draw triangle
             pts = self.calc_triangle()
-            one_x, one_y = occmap._cell_index(pts[0], pts[1])
-            two_x, two_y = occmap._cell_index(pts[2], pts[3])
-            three_x, three_y = occmap._cell_index(self.pos.position.x, self.pos.position.y)
-            triangle = np.array([[one_x, one_y], [two_x, two_y], [three_x, three_y]], np.int32)
+            one_row, one_col = occmap._cell_index(pts[0], pts[1])
+            two_row, two_col = occmap._cell_index(pts[2], pts[3])
+            three_row, three_col = occmap._cell_index(self.pos.position.x,
+                                                      self.pos.position.y)
+            triangle = np.array([[one_col, one_row],
+                                 [two_col, two_row],
+                                 [three_col, three_row]], np.int32)
             cv2.fillConvexPoly(img, triangle, 1)
-
             # display seenmap image to screen
             cv2.imshow("MAP", img)
             cv2.waitKey(10)
