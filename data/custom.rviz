@@ -31,24 +31,6 @@ Panels:
 Visualization Manager:
   Class: ""
   Displays:
-    - Alpha: 0.5
-      Cell Size: 1
-      Class: rviz/Grid
-      Color: 160; 160; 164
-      Enabled: true
-      Line Style:
-        Line Width: 0.03
-        Value: Lines
-      Name: Grid
-      Normal Cell Count: 0
-      Offset:
-        X: 0
-        Y: 0
-        Z: 0
-      Plane: XY
-      Plane Cell Count: 10
-      Reference Frame: <Fixed Frame>
-      Value: true
     - Alpha: 1
       Class: rviz/RobotModel
       Collision Enabled: false
@@ -284,14 +266,6 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
-    - Alpha: 0.7
-      Class: rviz/Map
-      Color Scheme: map
-      Draw Behind: false
-      Enabled: true
-      Name: Map
-      Topic: /map
-      Value: true
     - Class: rviz/Group
       Displays:
         - Alpha: 0.7
@@ -421,7 +395,7 @@ Visualization Manager:
       Image Rendering: background and overlay
       Image Topic: /camera/rgb/image_raw
       Name: Camera
-      Overlay Alpha: 1
+      Overlay Alpha: 0.1
       Queue Size: 2
       Transport Hint: raw
       Value: true
@@ -432,7 +406,6 @@ Visualization Manager:
           Costmap: true
           Planner: true
           Value: true
-        Grid: true
         LaserScan: true
         Local Map:
           Cost Cloud: true
@@ -444,23 +417,22 @@ Visualization Manager:
         Marker: true
         RobotModel: true
         Value: true
-        Victims Marker: true
       Zoom Factor: 1
     - Class: rviz/Marker
       Enabled: true
       Marker Topic: visualization_marker
       Name: Marker
       Namespaces:
-        basic_shapes: true
+        {}
       Queue Size: 100
       Value: true
-    - Class: rviz/Marker
+    - Alpha: 0.7
+      Class: rviz/Map
+      Color Scheme: map
+      Draw Behind: false
       Enabled: true
-      Marker Topic: /victim_marker
-      Name: Victims Marker
-      Namespaces:
-        spheres: true
-      Queue Size: 100
+      Name: Map
+      Topic: /seenmap
       Value: true
   Enabled: true
   Global Options:
