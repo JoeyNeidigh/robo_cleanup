@@ -1,20 +1,15 @@
 #!/usr/bin/env python
 import rospy
 import map_utils
-import random
 import tf
 import actionlib
 import numpy as np
-import cv2
-from sensor_msgs.msg import Image
-from cv_bridge import CvBridge, CvBridgeError
 from move_base_msgs.msg import MoveBaseGoal, MoveBaseAction
 from geometry_msgs.msg import Pose, Point, PointStamped
-from geometry_msgs.msg import PoseWithCovarianceStamped, PoseStamped
+from geometry_msgs.msg import PoseWithCovarianceStamped
 from nav_msgs.msg import OccupancyGrid
 from actionlib_msgs.msg import *
 from visualization_msgs.msg import Marker
-from sound_play.msg import SoundRequest
 from geometry_msgs.msg import Twist
 from std_msgs.msg import Bool
 
@@ -36,11 +31,7 @@ class RoboCleanupNode(object):
         rospy.Subscriber('/visualization_marker', Marker, self.marker_callback)
         rospy.Subscriber('/amcl_pose', PoseWithCovarianceStamped,
                             self.position_callback)
-        rospy.Subscriber(
 
-        self.marker_pub = rospy.Publisher('mess_marker', Marker,
-                                            queue_size=10)
- 
         #Add a publisher to publish Twists message to the base to back up robo
         self.mv_base = rospy.Publisher('/cmd_vel_mux/input/teleop', Twist, queue_size=10)
         self.goal_reached = rospy.Publisher('/goal_reached', Bool, queue_size=10)
@@ -49,13 +40,14 @@ class RoboCleanupNode(object):
         self.new_goal = rospy.Subscriber('new_goal', MoveBaseGoal, self.new_goal_callback)
         
         #Add a publisher to publish different mess objects it sees in its own view
-        self.mess = rospy.Publisher('/mess', Marker, queue_size=10)
+        self.mess_pub = rospy.Publisher('/mess', Marker, queue_size=10)
+        rospy.Subscriber('messes_to_clean', Float32MultiArray, self.mess_arr_callback)
 
-        self.mess = []
         self.position = None
         self.searching = False
         self.cleaning = False
         self.cur_mess = None
+        self.mess_id = 1
         self.tf_listener = tf.TransformListener()
 
         while self.map_msg is None and not rospy.is_shutdown():
@@ -73,7 +65,7 @@ class RoboCleanupNode(object):
    
         while not rospy.is_shutdown():   
             
-            #Search the space randomly eventually will ask CC for locations to go to 
+            #Search the space
             if (self.searching and self.goal is not None and 
                 (self.ac.get_state() is 3 or self.ac.get_state() is 4 
                 or not self.close_enough(self.position.position.x, 
@@ -86,8 +78,9 @@ class RoboCleanupNode(object):
             # Need to have it search through a shared list of the mess objects and
             # have it choose a object with an algorithm 
             if self.cleaning:
-                for cur in mess:
-                    self.drive_to_mess(cur)
+                length = len(self.mess_arr)-1
+                for i in range(0, length):
+                    self.drive_to_mess(self.mess_arr[i], self.mess_arr[i+1])
                     self.take_to_safezone()         
     
             
@@ -101,38 +94,10 @@ class RoboCleanupNode(object):
         #Send twist messsage to back up a foot to drop off the mess
         self.mv_base.publish(mv_back)      
 
-    def drive_to_mess(self, mess):
-        # stop moving
-        self.ac.cancel_goal()
-        marker_point = PointStamped()
-        marker_point.header.frame_id = 'ar_marker'
-        marker_point.header.stamp = rospy.get_rostime()
-        marker_point.point.x = 0
-        marker_point.point.y = 0
-        marker_point.point.z = .3
-        marker_point.header.stamp = rospy.get_rostime()
-        try: # transform the marker to the map frame
-            self.tf_listener.waitForTransform('ar_marker', # from here
-                                              'map',     # to here
-                                              marker_point.header.stamp,
-                                              rospy.Duration(1.0))
-
-            marker_point = self.tf_listener.transformPoint('map',
-                                                            marker_point)
-
-        except tf.Exception as e:
-            print(e)
-
-        # send the goal to the robot
-        theta = (euler[2] + np.pi/2) % (2 * (np.pi))
-        goal = self.goal_message(marker_point.point.x,
-                                 marker_point.point.y, theta)
+    def drive_to_mess(self, mess_x, mess_y):
+        goal = self.goal_message(mess_x, mess_y, 0)
         self.go_to_point(goal)
-        self.ac.wait_for_result() 
-
-        mess_marker = self.make_marker(marker_point.point.x, marker_point.point.y, .25, 255, 0, 0, self.mess_id, 'mess')
-        self.mess_id += 1
-        self.marker_pub.publish(mess_marker)
+        self.ac.wait_for_result()
 
     def go_to_point(self, goal):
         """Sends the robot to a given goal point"""
@@ -182,9 +147,9 @@ class RoboCleanupNode(object):
             print("ERROR in marker_callback")
 
         mess = marker_point.point
-        if self.close__enough(self.position.x, self.position.y, mess.x, mess.y):
-            self.mess.publish(make_marker(mess.x, mess.y, .25, 255, 0, 0, 
-                                                    self.mess_id, 'mes')
+        if self.close_enough(self.position.position.x, self.position.position.y, mess.x, mess.y, 1):
+            self.mess_pub.publish(self.make_marker(mess.x, mess.y, .25, 255, 0, 0, self.mess_id, 'mes'))
+            self.mess_id += 1
 
     def make_marker(self, x, y, size, r, g, b, ID, ns):
         """ Create a Marker message with the given x,y coordinates """
@@ -219,6 +184,9 @@ class RoboCleanupNode(object):
 
     def new_goal_callback(self, new_goal):
         self.goal = new_goal.position
+
+    def mess_arr_callback(self, messes_msg):
+        self.mess_arr = messes_msg.data
 
 if __name__ == "__main__":
     RoboCleanupNode()

@@ -6,8 +6,7 @@ from socket import *
 import sys
 import socket
 import time
-from geometry_msgs.msg import Pose, PoseWithCovariance
-from visualization_msgs.msg import Marker
+from std_msg.msgs import Float32MultiArray
 
 class MessServer():
     def __init__(self):
@@ -16,6 +15,10 @@ class MessServer():
         # Set up port for incomming traffic
         host = ""
         port = 13004
+
+        self.mess.pub = rospy.Publisher('/messes_to_clean', Float32MultiArray, queue_size=10)
+        mess_arr = Float32MultiArray()        
+
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         except:
@@ -35,10 +38,13 @@ class MessServer():
             try:
                 data, addr = s.recvfrom(1024)
                 z = pickle.loads(data)
+                mess_arr.data = z
+                self.mess.pub.publish(mess_arr)
+                
             except Exception as e:
                 s.close()
                 rospy.loginfo(e)
 
                 
 if __name__ == "__main__":
-    CommandControl()
+    MessServer()
