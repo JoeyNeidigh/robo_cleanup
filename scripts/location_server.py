@@ -2,10 +2,10 @@
 import rospy
 import pickle
 import os
-from socket import *
 import sys
 import socket
 import time
+import numpy as np
 from geometry_msgs.msg import Pose, PoseWithCovariance
 from visualization_msgs.msg import Marker
 
@@ -46,11 +46,13 @@ class CommandControl():
                 if z[0] == 0:
                     teammate_marker_pub.publish(self.make_marker(z[1], z[2], z[3], 'robots'))
                 elif z[0] == 1 and self.is_new_mess(z[2], z[3]):
+                    rospy.loginfo("HERE!!!")
                     mess_marker_pub.publish(self.make_marker(z[1], z[2], z[3], 'mess'))
                     
             except Exception as e:
                 s.close()
                 rospy.loginfo(e)
+                sys.exit()
             
 
     # Create a marker for a robot whos position is stored in 'pose' and whose
@@ -87,7 +89,7 @@ class CommandControl():
 
     def is_new_mess(self, x, y):
         result = True
-        if len(self.messes >= 0):
+        if len(self.messes) >= 0:
             for m in self.messes:
                 if (np.sqrt((x - m.pose.position.x)**2 + (y - m.pose.position.y)**2) < .1):
                     result = False
