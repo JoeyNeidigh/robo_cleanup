@@ -11,6 +11,8 @@ from thread import start_new_thread
 from geometry_msgs.msg import Pose, PoseWithCovariance
 from visualization_msgs.msg import Marker
 from nav_msgs.msg import OccupancyGrid
+from move_base_msgs.msg import MoveBaseGoal
+from std_msgs.msg import Bool
 import numpy as np
 
 
@@ -23,6 +25,7 @@ class CommandControl():
         goal_pub = rospy.Publisher('/new_goal', MoveBaseGoal, queue_size=10)
         rospy.Subscriber('/goal_reached', Bool, self.goal_reached_callback)
         self.og = None
+        self.seenmap = None
         rospy.Subscriber('/seenmap', OccupancyGrid, self.seenmap_callback)
 
         # set up map for choosing goals
@@ -30,7 +33,10 @@ class CommandControl():
             rospy.loginfo("Waiting for map...")
             rospy.sleep(1)
 
+        
+
         self.map = map_utils.Map(self.map_msg)
+        self.goal_reached = True
 
         # Set up port for incomming traffic
         host = ""
@@ -59,11 +65,13 @@ class CommandControl():
         
         # main loop
         while not rospy.is_shutdown():
+            self.seenmap = map_utils.Map(self.og)
             try:
-                conn.send(pickle.dumps(self.random_goal()))
+                goal = self.random_goal()
+                conn.send(pickle.dumps(goal))
                 response = conn.recv(BUFFER_SIZE)
-                if response == "UNSEEN" && self.goal_reached == True:
-                    rospy.loginfo("GOAL CHOSEN")
+                if response == "UNSEEN" and self.goal_reached == True:
+                    rospy.loginfo("GOAL CHOSEN (%f, %f)", goal[0], goal[1])
                     goal_msg.target_pose.header.stamp = rospy.get_rostime()
                     goal_msg.target_pose.pose.position.x = goal[0]
                     goal_msg.target_pose.pose.position.y = goal[1]
@@ -75,13 +83,13 @@ class CommandControl():
                 rospy.loginfo("SEENMAP SERVER ERROR:")
                 rospy.loginfo(e)
                 sys.exit()
-            rospy.sleep(1)
+            rospy.sleep(5)
 
     def random_goal(self):
         x_goal = 100000
         y_goal = 100000
 
-        while self.map.get_cell(x_goal, y_goal) != 0 and not seen(x_goal, y_goal):
+        while self.map.get_cell(x_goal, y_goal) != 0 and not self.seen((x_goal, y_goal)):
             x_goal = random.random() * 20.0 - 10.0
             y_goal = random.random() * 20.0 - 10.0
 
