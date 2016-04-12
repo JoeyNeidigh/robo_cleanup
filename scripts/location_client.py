@@ -15,6 +15,7 @@ class ClientNode():
         host = "134.126.125.125" # ip of server
         port = 13000
         addr = (host, port)
+        self.messes = []
 
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -33,12 +34,22 @@ class ClientNode():
         while not rospy.is_shutdown():
             try:
                 s.sendto(pickle.dumps([0, ROBOT_ID, self.pos[0], self.pos[1]]), addr)
-                s.sendto(pickle.dumps([1, ROBOT_ID, self.mess[0], self.mess[1]]), addr)
+                if is_new_mess(self.mess[0], self.mess[1]):
+                    s.sendto(pickle.dumps([1, ROBOT_ID, self.mess[0], self.mess[1]]), addr)
             except:
                 s.close()
                 rospy.loginfo("ERROR. CLOSING SOCKET")
 
             rate.sleep()
+
+    def is_new_mess(self, x, y):
+        result = True
+        if len(self.messes >= 0):
+            for m in self.messes:
+                if (np.sqrt((x - m.pose.position.x)**2 + (y - m.pose.position.y)**2) < .1):
+                    result = False
+                    break
+        return result
 
     # Callback for 'amcl_pose' topic
     def amcl_callback(self, amcl_msg):
