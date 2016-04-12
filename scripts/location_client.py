@@ -23,17 +23,17 @@ class ClientNode():
             sys.exit()
 
         rospy.Subscriber('/amcl_pose', PoseWithCovarianceStamped, self.amcl_callback)
-        robot_id = 1
-        self.position = [robot_id,0,0]
+        ROBOT_ID = 1
+        self.pos = (0,0)
+        self.mess = (0,0)
         rate = rospy.Rate(5)
 
         rospy.loginfo("CLIENT SETUP COMPLETE")
         
         while not rospy.is_shutdown():
-            a = self.position
-            data = pickle.dumps(a)
             try:
-                s.sendto(data, addr)
+                s.sendto(pickle.dumps([0, ROBOT_ID, self.pos[0], self.pos[1]]), addr)
+                s.sendto(pickle.dumps([1, ROBOT_ID, self.mess[0], self.mess[1]]), addr)
             except:
                 s.close()
                 rospy.loginfo("ERROR. CLOSING SOCKET")
@@ -42,8 +42,8 @@ class ClientNode():
 
     # Callback for 'amcl_pose' topic
     def amcl_callback(self, amcl_msg):
-        self.position[1] = amcl_msg.pose.pose.position.x
-        self.position[2] = amcl_msg.pose.pose.position.y
+        self.pos[0] = amcl_msg.pose.pose.position.x
+        self.pos[1] = amcl_msg.pose.pose.position.y
             
         
 if __name__ == "__main__":
