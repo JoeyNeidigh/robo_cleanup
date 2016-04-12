@@ -16,7 +16,7 @@ class ClientNode():
         self.og = None
         rospy.Subscriber('/seenmap', OccupancyGrid, self.seenmap_callback)
 
-        host = "localhost" # ip of server
+        host = "134.126.125.125" # ip of server
         port = 13001
         BUFFER_SIZE = 1024
         self.goal_reached = True
@@ -42,13 +42,15 @@ class ClientNode():
         while not rospy.is_shutdown():
             self.seenmap = map_utils.Map(self.og)
             try:
-                goal = pickle.loads(self.s.recv(self.BUFFER_SIZE))
+                goal = pickle.loads(s.recv(BUFFER_SIZE))
                 if self.seen(goal):
                     s.send("SEEN")
+                    rospy.loginfo("SEEN GOAL (%f, %f)", goal[0], goal[1])
                 else:
                     s.send("UNSEEN")
+                    rospy.loginfo("UNSEEN GOAL (%f, %f)", goal[0], goal[1])
             except Exception as e:
-                self.s.close()
+                s.close()
                 rospy.loginfo("TCP_TEST ERROR:")
                 rospy.loginfo(e)
                 sys.exit()
