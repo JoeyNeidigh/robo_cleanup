@@ -16,6 +16,7 @@ from actionlib_msgs.msg import *
 from visualization_msgs.msg import Marker
 from sound_play.msg import SoundRequest
 from geometry_msgs.msg import Twist
+from std_msgs.msg import Bool
 
 """
 Might Use later on for a state machine
@@ -35,21 +36,25 @@ class RoboCleanupNode(object):
         rospy.Subscriber('/visualization_marker', Marker, self.marker_callback)
         rospy.Subscriber('/amcl_pose', PoseWithCovarianceStamped,
                             self.position_callback)
+        rospy.Subscriber(
 
         self.marker_pub = rospy.Publisher('mess_marker', Marker,
                                             queue_size=10)
  
         #Add a publisher to publish Twists message to the base to back up robo
         self.mv_base = rospy.Publisher('/cmd_vel_mux/input/teleop', Twist, queue_size=10)
+        self.goal_reached = rospy.Publisher('/goal_reached', Bool, queue_size=10)
 
-        #Add a subscriber that listens for the list of mess objects
+        #Add a subscriber that listens for new goals
+        self.new_goal = rospy.Subscriber('new_goal', MoveBaseGoal, self.new_goal_callback)
         
         #Add a publisher to publish different mess objects it sees in its own view
         self.mess = rospy.Publisher('/mess', Marker, queue_size=10)
 
-        self.mess_id = 1
+        self.mess = []
         self.position = None
         self.searching = False
+        self.cleaning = False
         self.cur_mess = None
         self.tf_listener = tf.TransformListener()
 
@@ -66,21 +71,24 @@ class RoboCleanupNode(object):
         #Initially Sets the safezone to just the start location 
         self.safezone = self.position
    
-        while not rospy.is_shutdown():
+        while not rospy.is_shutdown():   
+            
             #Search the space randomly eventually will ask CC for locations to go to 
-            if not self.searching or self.ac.get_state() is 3 or self.ac.get_state() is 4:
-                #self.random_search()
-
+            if (self.searching and self.goal is not None and 
+                (self.ac.get_state() is 3 or self.ac.get_state() is 4 
+                or not self.close_enough(self.position.position.x, 
+                self.position.position.y, self.goal.x, self.goal.y, .7))):
+                goal = self.goal_message(self.goal.x, self.goal.y)
+                self.ac.send_goal(goal)
+                self.goal = None                
+                
             # Just does the current mess it sees 
             # Need to have it search through a shared list of the mess objects and
             # have it choose a object with an algorithm 
-            if (self.cur_mess is not None):
-                self.drive_to_mess(self.cur_mess)
-                #Take mess to safezone
-                self.take_to_safezone()         
-                #return searching
-                self.cur_mess = None  
-                self.searching = False      
+            if self.cleaning:
+                for cur in mess:
+                    self.drive_to_mess(cur)
+                    self.take_to_safezone()         
     
             
     def take_to_safezone(self):
@@ -102,12 +110,6 @@ class RoboCleanupNode(object):
         marker_point.point.x = 0
         marker_point.point.y = 0
         marker_point.point.z = .3
-        # transformation to rotate the robot to face the mess
-        quat = (self.mark_angles.orientation.x,
-                self.mark_angles.orientation.y,
-                self.mark_angles.orientation.z,
-                self.mark_angles.orientation.w)
-        euler = tf.transformations.euler_from_quaternion(quat)
         marker_point.header.stamp = rospy.get_rostime()
         try: # transform the marker to the map frame
             self.tf_listener.waitForTransform('ar_marker', # from here
@@ -131,21 +133,6 @@ class RoboCleanupNode(object):
         mess_marker = self.make_marker(marker_point.point.x, marker_point.point.y, .25, 255, 0, 0, self.mess_id, 'mess')
         self.mess_id += 1
         self.marker_pub.publish(mess_marker)
-            
-    def random_search(self):
-        x_goal = 100000
-        y_goal = 100000
-
-        while self.map.get_cell(x_goal, y_goal) != 0:
-            x_goal = random.random() * 20.0 - 10.0
-            y_goal = random.random() * 20.0 - 10.0
-
-        rospy.loginfo("Random goal found: ({}, {})".format(x_goal, y_goal))
-
-        goal = self.goal_message(x_goal, y_goal, 0)
-        
-        self.go_to_point(goal)
-        self.searching = True
 
     def go_to_point(self, goal):
         """Sends the robot to a given goal point"""
@@ -156,7 +143,7 @@ class RoboCleanupNode(object):
 
     def goal_message(self, x_target, y_target, theta_target):
         """ Create a goal message in the base_link coordinate frame"""
-
+ 
         quat = tf.transformations.quaternion_from_euler(0, 0, theta_target)
         # Create a goal message ...
         goal = MoveBaseGoal()
@@ -179,10 +166,6 @@ class RoboCleanupNode(object):
         marker_point.point.y = marker.pose.position.y
         marker_point.point.z = marker.pose.position.z
 
-        marker_angles = PoseStamped()
-        marker_angles.header.frame_id = 'camera_rgb_optical_frame'
-        marker_angles.header.stamp = rospy.get_rostime()
-        marker_angles.pose = marker.pose
 
         try: # transform marker position into the map frame
             marker_point.header.stamp = rospy.get_rostime()
@@ -193,15 +176,15 @@ class RoboCleanupNode(object):
                                               rospy.Duration(1.0))
             # get the point transform
             marker_point = self.tf_listener.transformPoint('map', marker_point) 
-            # get the pose  transform to get correct rotation
-            marker_angles = self.tf_listener.transformPose('map',marker_angles) 
-            self.mark_angles = marker_angles.pose
             
         except tf.Exception as e:
             print(e)
             print("ERROR in marker_callback")
 
-        self.cur_mess = marker_point.point
+        mess = marker_point.point
+        if self.close__enough(self.position.x, self.position.y, mess.x, mess.y):
+            self.mess.publish(make_marker(mess.x, mess.y, .25, 255, 0, 0, 
+                                                    self.mess_id, 'mes')
 
     def make_marker(self, x, y, size, r, g, b, ID, ns):
         """ Create a Marker message with the given x,y coordinates """
@@ -229,6 +212,13 @@ class RoboCleanupNode(object):
     def position_callback(self, pos):
         """ Saves the current position of the robot"""
         self.position = pos.pose.pose
+
+    def close_enough(self, x_one, y_one, x_two, y_two, threshold):
+        """ Checks to see if its close enough to a goal"""
+        return (np.sqrt((x_one - x_two)**2 + (y_one - y_two)**2) < threshold)
+
+    def new_goal_callback(self, new_goal):
+        self.goal = new_goal.position
 
 if __name__ == "__main__":
     RoboCleanupNode()
