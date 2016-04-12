@@ -34,7 +34,8 @@ class ClientNode():
         while not rospy.is_shutdown():
             try:
                 s.sendto(pickle.dumps([0, ROBOT_ID, self.pos[0], self.pos[1]]), addr)
-                if is_new_mess(self.mess[0], self.mess[1]):
+                if self.is_new_mess(self.mess[0], self.mess[1]):
+                    self.messes.append((self.mess[0], self.mess[1]))
                     s.sendto(pickle.dumps([1, ROBOT_ID, self.mess[0], self.mess[1]]), addr)
             except:
                 s.close()
@@ -46,7 +47,7 @@ class ClientNode():
         result = True
         if len(self.messes >= 0):
             for m in self.messes:
-                if (np.sqrt((x - m.pose.position.x)**2 + (y - m.pose.position.y)**2) < .1):
+                if (np.sqrt((x - m[0])**2 + (y - m[1])**2) < .1):
                     result = False
                     break
         return result

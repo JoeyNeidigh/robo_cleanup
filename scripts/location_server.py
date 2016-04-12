@@ -16,8 +16,9 @@ from visualization_msgs.msg import Marker
 class CommandControl():
     def __init__(self):
         rospy.init_node('command_control')
-        teammate_marker_pub = rospy.Publisher('teammate_marker', Marker, queue_size=10)
-        mess_marker_pub = rospy.Publisher('mess_marker', Marker, queue_size=10)
+        teammate_marker_pub = rospy.Publisher('/teammate_marker', Marker, queue_size=10)
+        mess_marker_pub = rospy.Publisher('/mess_marker', Marker, queue_size=10)
+        mess_arr_pub = rospy.Publisher('/mess_arr', Marker, queue_size=10)
 
         self.messes = []
 
@@ -44,7 +45,7 @@ class CommandControl():
                 z = pickle.loads(data)
                 if z[0] == 0:
                     teammate_marker_pub.publish(self.make_marker(z[1], z[2], z[3], 'robots'))
-                elif z[0] == 1 and is_new_mess(z[2], z[3]):
+                elif z[0] == 1 and self.is_new_mess(z[2], z[3]):
                     mess_marker_pub.publish(self.make_marker(z[1], z[2], z[3], 'mess'))
                     
             except Exception as e:
