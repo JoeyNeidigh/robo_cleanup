@@ -81,10 +81,12 @@ class RoboCleanupNode(object):
             # Need to have it search through a shared list of the mess objects and
             # have it choose a object with an algorithm 
             if self.cleaning:
-                length = len(self.mess_arr)-1
+                length = len(self.mess_arr)/2
+                count = 0 
                 for i in range(0, length):
-                    self.drive_to_mess(self.mess_arr[i], self.mess_arr[i+1])
+                    self.drive_to_mess(self.mess_arr[i+count], self.mess_arr[i+1+count])
                     self.take_to_safezone()         
+                    count += 1
     
             
     def take_to_safezone(self):

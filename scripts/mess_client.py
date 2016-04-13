@@ -11,9 +11,11 @@ class MessClient():
     def __init__(self):
         rospy.init_node('mess_client')
 
-        host = "134.126.125.236" # ip of server
+        host1 = "134.126.125.236" # ip of server
+        host2 = "134.126.125.125
         port = 13004 
-        self.addr = (host, port)
+        self.addr1 = (host1, port)
+        self.addr2 = (host2, port)
 
         rospy.Subscriber('mess_arr', Float32MultiArray, self.mess_arr_callback) 
 
@@ -29,8 +31,10 @@ class MessClient():
 
     def mess_arr_callback(self, mess_msg):
         data = pickle.dumps(mess_msg.data)
+        #split data into two seperate arrays
         try:
-            self.s.sendto(data, self.addr)
+            self.s.sendto(data, self.addr1)
+            self.s.sendto(data, self.addr2)
 
         except:
             self.s.close()
