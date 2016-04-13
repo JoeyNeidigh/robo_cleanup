@@ -102,7 +102,7 @@ class CommandControl():
         result = True
         if len(self.messes) >= 0:
             for m in self.messes:
-                if (np.sqrt((x - m.pose.position.x)**2 + (y - m.pose.position.y)**2) < .1):
+                if (np.sqrt((x - m.pose.position.x)**2 + (y - m.pose.position.y)**2) < .2):
                     result = False
                     break
         return result
