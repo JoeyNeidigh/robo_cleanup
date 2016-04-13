@@ -6,7 +6,7 @@ from socket import *
 import sys
 import socket
 import time
-from std_msg.msgs import Float32MultiArray
+from std_msgs.msg import Float32MultiArray
 
 class MessServer():
     def __init__(self):
@@ -16,7 +16,7 @@ class MessServer():
         host = ""
         port = 13004
 
-        self.mess.pub = rospy.Publisher('/messes_to_clean', Float32MultiArray, queue_size=10)
+        self.mess_pub = rospy.Publisher('/messes_to_clean', Float32MultiArray, queue_size=10)
         mess_arr = Float32MultiArray()        
 
         try:
@@ -31,15 +31,15 @@ class MessServer():
             rospy.loginfo("FAILED TO BIND")
             sys.exit()
 
-        robot_pose = Pose()
         rospy.loginfo("COMMAND AND CONTROL ONLINE")
 
         while not rospy.is_shutdown():
             try:
                 data, addr = s.recvfrom(1024)
                 z = pickle.loads(data)
+                rospy.loginfo(z)
                 mess_arr.data = z
-                self.mess.pub.publish(mess_arr)
+                self.mess_pub.publish(mess_arr)
                 
             except Exception as e:
                 s.close()
