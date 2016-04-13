@@ -3,6 +3,7 @@
 
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find robo_cleanup)/data/cc.rviz"/>
   <node name="command_control" type="location_server.py" pkg="robo_cleanup" output="screen"/>
+  <node name="mess_client" type="mess_client.py" pkg="robo_cleanup" output="screen"/>
 
   <!-- Map server -->
   <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />

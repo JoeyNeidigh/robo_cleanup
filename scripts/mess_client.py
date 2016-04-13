@@ -5,14 +5,14 @@ import pickle
 import socket
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import PoseWithCovarianceStamped
-from std_msg.msgs import Float32MultiArray
+from std_msgs.msg import Float32MultiArray
 
 class MessClient():
     def __init__(self):
         rospy.init_node('mess_client')
 
         host1 = "134.126.125.236" # ip of server
-        host2 = "134.126.125.125
+        host2 = "134.126.125.237"
         port = 13004 
         self.addr1 = (host1, port)
         self.addr2 = (host2, port)
@@ -30,7 +30,9 @@ class MessClient():
         rospy.spin()
 
     def mess_arr_callback(self, mess_msg):
-        data = pickle.dumps(mess_msg.data)
+        dat = [1,2,3,4]
+        data = pickle.dumps(dat)
+
         #split data into two seperate arrays
         try:
             self.s.sendto(data, self.addr1)
