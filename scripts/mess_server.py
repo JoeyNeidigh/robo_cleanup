@@ -37,6 +37,7 @@ class MessServer():
             try:
                 data, addr = s.recvfrom(1024)
                 z = pickle.loads(data)
+                rospy.loginfo(z)
                 mess_arr.data = z
                 self.mess_pub.publish(mess_arr)
                 
