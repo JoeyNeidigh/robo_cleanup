@@ -6,6 +6,7 @@ import sys
 import socket
 import time
 import numpy as np
+from std_msgs.msg import Float32MultiArray
 from geometry_msgs.msg import Pose, PoseWithCovariance
 from visualization_msgs.msg import Marker
 
@@ -18,7 +19,7 @@ class CommandControl():
         rospy.init_node('command_control')
         teammate_marker_pub = rospy.Publisher('/teammate_marker', Marker, queue_size=10)
         mess_marker_pub = rospy.Publisher('/mess_marker', Marker, queue_size=10)
-        mess_arr_pub = rospy.Publisher('/mess_arr', Marker, queue_size=10)
+        mess_arr_pub = rospy.Publisher('/mess_arr', Float32MultiArray, queue_size=10)
 
         self.messes = []
 
@@ -38,6 +39,7 @@ class CommandControl():
             sys.exit()
 
         rospy.loginfo("COMMAND AND CONTROL ONLINE")
+        arr = Float32MultiArray()
 
         while not rospy.is_shutdown():
             try:
@@ -48,11 +50,20 @@ class CommandControl():
                 elif z[0] == 1 and self.is_new_mess(z[2], z[3]):
                     rospy.loginfo("HERE!!!")
                     mess_marker_pub.publish(self.make_marker(z[1], z[2], z[3], 'mess'))
-                    
+                arr.data = self.to_array()
+                mess_arr_pub.publish(arr)
             except Exception as e:
                 s.close()
                 rospy.loginfo(e)
                 sys.exit()
+
+    def to_array(self):
+        array = []
+        for m in self.messes:
+            array.append(m.pose.position.x)
+            array.append(m.pose.position.y)
+
+        return array
             
 
     # Create a marker for a robot whos position is stored in 'pose' and whose
@@ -98,3 +109,4 @@ class CommandControl():
                 
 if __name__ == "__main__":
     CommandControl()
+    

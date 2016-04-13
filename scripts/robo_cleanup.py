@@ -40,7 +40,7 @@ class RoboCleanupNode(object):
         self.new_goal = rospy.Subscriber('new_goal', MoveBaseGoal, self.new_goal_callback)
         
         #Add a publisher to publish different mess objects it sees in its own view
-        self.mess_pub = rospy.Publisher('/mess', Marker, queue_size=10)
+        self.mess_pub = rospy.Publisher('/mess', Point, queue_size=10)
         rospy.Subscriber('messes_to_clean', Float32MultiArray, self.mess_arr_callback)
 
         self.position = None
@@ -148,7 +148,7 @@ class RoboCleanupNode(object):
 
         mess = marker_point.point
         if self.close_enough(self.position.position.x, self.position.position.y, mess.x, mess.y, 1):
-            self.mess_pub.publish(self.make_marker(mess.x, mess.y, .25, 255, 0, 0, self.mess_id, 'mes'))
+            self.mess_pub.publish(mess)
             self.mess_id += 1
 
     def make_marker(self, x, y, size, r, g, b, ID, ns):
