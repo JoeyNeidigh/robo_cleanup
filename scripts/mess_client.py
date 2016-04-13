@@ -30,8 +30,7 @@ class MessClient():
         rospy.spin()
 
     def mess_arr_callback(self, mess_msg):
-        dat = [1,2,3,4]
-        data = pickle.dumps(dat)
+        data = pickle.dumps(mess_msg.data)
 
         #split data into two seperate arrays
         try:
