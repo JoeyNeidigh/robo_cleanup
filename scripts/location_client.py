@@ -33,16 +33,19 @@ class ClientNode():
         rate = rospy.Rate(5)
 
         rospy.loginfo("CLIENT SETUP COMPLETE")
-
+        old_mess_x = 0
+        old_mess_y = 0
         while not rospy.is_shutdown():
             mess_x = self.mess[0]
             mess_y = self.mess[1]
+
             try:
                 s.sendto(pickle.dumps([0, ROBOT_ID, self.pos[0], self.pos[1]]), addr)
-                if mess_x != None && mess_y != None:
+                if mess_x != None and mess_y != None:
                     rospy.loginfo("HERE!!!!!!")
-                    self.messes.append((mess_x, mess_y))
                     s.sendto(pickle.dumps([1, ROBOT_ID, mess_x, mess_y]), addr)
+                    old_mess_x = mess_x
+                    old_mess_y = mess_y
             except Exception as e:
                 s.close()
                 rospy.loginfo("ERROR. CLOSING SOCKET")
@@ -51,14 +54,8 @@ class ClientNode():
 
             rate.sleep()
 
-    def is_new_mess(self, x, y):
-        result = True
-        if len(self.messes) >= 0:
-            for m in self.messes:
-                if (np.sqrt((x - m[0])**2 + (y - m[1])**2) < .1):
-                    result = False
-                    break
-        return result
+    def is_new_mess(self, xone, yone, xtwo, ytwo):
+        return np.sqrt((xone - xtwo)**2 + (yone - ytwo)**2) < .2
 
     # Callback for 'amcl_pose' topic
     def amcl_callback(self, amcl_msg):

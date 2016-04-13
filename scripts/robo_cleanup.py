@@ -11,7 +11,7 @@ from nav_msgs.msg import OccupancyGrid
 from actionlib_msgs.msg import *
 from visualization_msgs.msg import Marker
 from geometry_msgs.msg import Twist
-from std_msgs.msg import Bool
+from std_msgs.msg import Bool, Float32MultiArray
 
 """
 Might Use later on for a state machine
@@ -49,6 +49,9 @@ class RoboCleanupNode(object):
         self.cur_mess = None
         self.mess_id = 1
         self.tf_listener = tf.TransformListener()
+        self.old_marker = Point()
+        self.old_marker.x = 0
+        self.old_marker.y = 0
 
         while self.map_msg is None and not rospy.is_shutdown():
             rospy.loginfo("Waiting for map...")
@@ -124,32 +127,30 @@ class RoboCleanupNode(object):
  
     def marker_callback(self, marker):
         """ The marker callback to see the ar_markers"""
-        marker_point = PointStamped()
-        marker_point.header.frame_id = 'camera_rgb_optical_frame'
-        marker_point.header.stamp = rospy.get_rostime()
-        marker_point.point.x = marker.pose.position.x
-        marker_point.point.y = marker.pose.position.y
-        marker_point.point.z = marker.pose.position.z
-
-
-        try: # transform marker position into the map frame
+        if not self.close_enough(self.old_marker.x, self.old_marker.y, marker.pose.position.x, marker.pose.position.y, .15):
+            marker_point = PointStamped()
+            marker_point.header.frame_id = 'camera_rgb_optical_frame'
             marker_point.header.stamp = rospy.get_rostime()
-            marker_angles.header.stamp = rospy.get_rostime()
-            self.tf_listener.waitForTransform('camera_rgb_optical_frame',
-                                              'map',
-                                              marker_point.header.stamp,
-                                              rospy.Duration(1.0))
-            # get the point transform
-            marker_point = self.tf_listener.transformPoint('map', marker_point) 
-            
-        except tf.Exception as e:
-            print(e)
-            print("ERROR in marker_callback")
+            marker_point.point.x = marker.pose.position.x
+            marker_point.point.y = marker.pose.position.y
+            marker_point.point.z = marker.pose.position.z
 
-        mess = marker_point.point
-        if self.close_enough(self.position.position.x, self.position.position.y, mess.x, mess.y, 1):
-            self.mess_pub.publish(mess)
-            self.mess_id += 1
+            try: # transform marker position into the map frame
+                marker_point.header.stamp = rospy.get_rostime()
+                self.tf_listener.waitForTransform('camera_rgb_optical_frame',
+                                                  'map',
+                                                  marker_point.header.stamp,
+                                                  rospy.Duration(1.0))
+                # get the point transform
+                marker_point = self.tf_listener.transformPoint('map', marker_point) 
+            except tf.Exception as e:
+                print(e)
+                print("ERROR in marker_callback")
+
+            if self.close_enough(self.position.position.x, self.position.position.y, marker_point.point.x, marker_point.point.y, 1):
+                self.mess_pub.publish(marker_point.point)
+                self.old_marker.x = marker_point.point.x
+                self.old_marker.y = marker_point.point.y
 
     def make_marker(self, x, y, size, r, g, b, ID, ns):
         """ Create a Marker message with the given x,y coordinates """
