@@ -28,7 +28,6 @@ class RoboCleanupNode(object):
         self.ac = actionlib.SimpleActionClient("move_base", MoveBaseAction)
         self.map_msg = None
         rospy.Subscriber('map', OccupancyGrid, self.map_callback)
-        rospy.Subscriber('/visualization_marker', Marker, self.marker_callback)
         rospy.Subscriber('/amcl_pose', PoseWithCovarianceStamped,
                             self.position_callback)
 
@@ -39,8 +38,6 @@ class RoboCleanupNode(object):
         #Add a subscriber that listens for new goals
         self.new_goal = rospy.Subscriber('new_goal', MoveBaseGoal, self.new_goal_callback)
         
-        #Add a publisher to publish different mess objects it sees in its own view
-        self.mess_pub = rospy.Publisher('/mess', Point, queue_size=10)
         rospy.Subscriber('messes_to_clean', Float32MultiArray, self.mess_arr_callback)
 
         self.position = None
@@ -87,7 +84,7 @@ class RoboCleanupNode(object):
                     self.drive_to_mess(self.mess_arr[i+count], self.mess_arr[i+1+count])
                     self.take_to_safezone()         
                     count += 1
-    
+    	
             
     def take_to_safezone(self):
         mv_back = Twist()
@@ -127,55 +124,10 @@ class RoboCleanupNode(object):
         goal.target_pose.pose.orientation.w = quat[3]
         return goal
  
-    def marker_callback(self, marker):
-        """ The marker callback to see the ar_markers"""
-        if not self.close_enough(self.old_marker.x, self.old_marker.y, marker.pose.position.x, marker.pose.position.y, .15):
-            marker_point = PointStamped()
-            marker_point.header.frame_id = 'camera_rgb_optical_frame'
-            marker_point.header.stamp = rospy.get_rostime()
-            marker_point.point.x = marker.pose.position.x
-            marker_point.point.y = marker.pose.position.y
-            marker_point.point.z = marker.pose.position.z
-
-            try: # transform marker position into the map frame
-                marker_point.header.stamp = rospy.get_rostime()
-                self.tf_listener.waitForTransform('camera_rgb_optical_frame',
-                                                  'map',
-                                                  marker_point.header.stamp,
-                                                  rospy.Duration(1.0))
-                # get the point transform
-                marker_point = self.tf_listener.transformPoint('map', marker_point) 
-            except tf.Exception as e:
-                print(e)
-                print("ERROR in marker_callback")
-
-            if self.close_enough(self.position.position.x, self.position.position.y, marker_point.point.x, marker_point.point.y, 1):
-                self.mess_pub.publish(marker_point.point)
-                self.old_marker.x = marker_point.point.x
-                self.old_marker.y = marker_point.point.y
-
-    def make_marker(self, x, y, size, r, g, b, ID, ns):
-        """ Create a Marker message with the given x,y coordinates """
-        m = Marker()
-        m.header.stamp = rospy.Time.now()
-        m.header.frame_id = 'map'
-        m.ns = ns
-        m.id = ID
-        m.type = m.SPHERE
-        m.action = m.ADD
-        m.pose.position.x = x
-        m.pose.position.y = y
-        m.scale.x = m.scale.y = m.scale.z = size    
-        m.color.r = r
-        m.color.g = g
-        m.color.b = b
-        m.color.a = 1.0
-        return m
 
     def map_callback(self, map_msg):
         """ map_msg will be of type OccupancyGrid """
         self.map_msg = map_msg
-
 
     def position_callback(self, pos):
         """ Saves the current position of the robot"""
