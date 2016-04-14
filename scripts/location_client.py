@@ -30,7 +30,7 @@ class ClientNode():
             rospy.loginfo("FAILED TO CREATE SOCKET")
             sys.exit()
 
-        self.ROBOT_ID = 1
+        self.ROBOT_ID = 0
         self.pos = [0,0]
         self.mess = [None,None]
         rate = rospy.Rate(5)
@@ -58,6 +58,7 @@ class ClientNode():
 
     # Callback for 'amcl_pose' topic
     def amcl_callback(self, amcl_msg):
+        self.position = amcl_msg.pose.pose
         self.pos[0] = amcl_msg.pose.pose.position.x
         self.pos[1] = amcl_msg.pose.pose.position.y
 
