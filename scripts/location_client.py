@@ -15,7 +15,7 @@ class ClientNode():
     def __init__(self):
         rospy.init_node('location_node')
         rospy.Subscriber('/visualization_marker', Marker, self.marker_callback)
-        rospy.Subscriber('/amcl_pose', PoseWithCovarianceStamped, self.position_callback)
+        rospy.Subscriber('/amcl_pose', PoseWithCovarianceStamped, self.amcl_callback)
 
         host = "134.126.125.125" # ip of server
         port = 13000
@@ -106,10 +106,7 @@ class ClientNode():
     def close_enough(self, x_one, y_one, x_two, y_two, threshold):
         """ Checks to see if its close enough to a goal"""
         return (np.sqrt((x_one - x_two)**2 + (y_one - y_two)**2) < threshold)
-           
-    def position_callback(self, pos):
-        """ Saves the current position of the robot"""
-        self.position = pos.pose.pose 
+
         
 if __name__ == "__main__":
     ClientNode()
