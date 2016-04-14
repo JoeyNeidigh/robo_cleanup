@@ -144,6 +144,7 @@ class RoboCleanupNode(object):
     def mess_arr_callback(self, messes_msg):
         self.mess_arr = messes_msg.data
         self.searching = False
+        self.cleaning = True
 
 if __name__ == "__main__":
     RoboCleanupNode()
