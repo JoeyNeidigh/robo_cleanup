@@ -40,7 +40,7 @@ class CommandControl():
 
         # Set up port for incomming traffic
         host = ""
-        port = 13001
+        port = 13005
         BUFFER_SIZE = 1024
         goal_msg = MoveBaseGoal()
         goal_msg.target_pose.header.frame_id = "map"
