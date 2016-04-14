@@ -34,15 +34,20 @@ class MessClient():
         return a_list[:half], a_list[half:]
 
     def mess_arr_callback(self, mess_msg):
-        data = pickle.dumps(mess_msg.data)
-
-        list_a, list_b = split_list(data)
+        rospy.loginfo("callback")
+        
         try:
-            self.s.sendto(list_a, self.addr1)
-            self.s.sendto(list_b, self.addr2)
+            if len(mess_msg.data) != 0:
+                list_a, list_b = self.split_list(mess_msg.data)
+                data1 = pickle.dumps(list_a)
+                data2 = pickle.dumps(list_b)
+                #self.s.sendto(data1, self.addr1)
+                self.s.sendto(data2, self.addr2)
+                rospy.loginfo("SENT MESS LISTS")
 
-        except:
+        except Exception as e:
             self.s.close()
+            rospy.loginfo(e)
             rospy.loginfo("ERROR. CLOSING SOCKET")
         
         
