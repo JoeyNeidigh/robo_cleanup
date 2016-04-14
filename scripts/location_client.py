@@ -14,7 +14,7 @@ import tf
 class ClientNode():
     def __init__(self):
         rospy.init_node('location_node')
-        rospy.Subscriber('/visualization_marker', Marker, self.marker_callback)
+        rospy.Subscriber('/visualization_marker', Marker, self.marker_callback, queue_size=1)
         rospy.Subscriber('/amcl_pose', PoseWithCovarianceStamped, self.amcl_callback)
 
         host = "134.126.125.125" # ip of server
@@ -84,16 +84,19 @@ class ClientNode():
             print("ERROR in marker_callback")
 
         new = True
-        if len(self.messes) is not 0:
+        if len(self.messes) != 0:
             for mess in self.messes:
                 if (self.close_enough(mess.x, mess.y, marker_point.point.x, marker_point.point.y, .15)):
                     new = False
         else:
             if self.close_enough(self.position.position.x, self.position.position.y, marker_point.point.x, marker_point.point.y, 1):
+                new = False
+                rospy.loginfo("In second one")
                 self.messes.append(marker_point.point)
                 self.s.sendto(pickle.dumps([1, self.ROBOT_ID, marker_point.point.x, marker_point.point.y]), self.addr)
 
         if self.close_enough(self.position.position.x, self.position.position.y, marker_point.point.x, marker_point.point.y, 1) and new:
+            rospy.loginfo("In third one")
             self.messes.append(marker_point.point)
             self.s.sendto(pickle.dumps([1, self.ROBOT_ID, marker_point.point.x, marker_point.point.y]), self.addr)
 
