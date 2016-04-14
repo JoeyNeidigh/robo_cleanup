@@ -23,7 +23,6 @@
   </node> 
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find robo_cleanup)/data/custom.rviz"/>
   <node name="robo_cleanup" pkg="robo_cleanup" type="robo_cleanup.py" output="screen"/>
-  <node name="client_node" pkg="robo_cleanup" type="client_node.py" output="screen"/>
   <node name="map_node" pkg="robo_cleanup" type="map_node.py" output="screen"/>
   <node name="mess_node" pkg="robo_cleanup" type="mess_server.py" output="screen"/>
   <node name="location_node" pkg="robo_cleanup" type="location_client.py" output="screen"/>

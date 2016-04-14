@@ -41,7 +41,8 @@ class RoboCleanupNode(object):
         rospy.Subscriber('messes_to_clean', Float32MultiArray, self.mess_arr_callback)
 
         self.position = None
-        self.searching = False
+        self.goal = None
+        self.searching = True
         self.cleaning = False
         self.cur_mess = None
         self.mess_id = 1
@@ -70,7 +71,7 @@ class RoboCleanupNode(object):
                 (self.ac.get_state() is 3 or self.ac.get_state() is 4 
                 or not self.close_enough(self.position.position.x, 
                 self.position.position.y, self.goal.x, self.goal.y, .7))):
-                goal = self.goal_message(self.goal.x, self.goal.y)
+                goal = self.goal_message(self.goal.x, self.goal.y, 0)
                 self.ac.send_goal(goal)
                 self.goal = None                
                 
@@ -138,10 +139,11 @@ class RoboCleanupNode(object):
         return (np.sqrt((x_one - x_two)**2 + (y_one - y_two)**2) < threshold)
 
     def new_goal_callback(self, new_goal):
-        self.goal = new_goal.position
+        self.goal = new_goal.target_pose.pose.position
 
     def mess_arr_callback(self, messes_msg):
         self.mess_arr = messes_msg.data
+        self.searching = False
 
 if __name__ == "__main__":
     RoboCleanupNode()
