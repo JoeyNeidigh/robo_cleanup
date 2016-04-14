@@ -4,8 +4,6 @@ import sys
 import pickle
 import socket
 import numpy as np
-from visualization_msgs.msg import Marker
-from nav_msgs.msg import Odometry
 from geometry_msgs.msg import PoseWithCovarianceStamped, Point
 
 # This node will periodically send its position to the CC.
@@ -32,7 +30,7 @@ class ClientNode():
         self.mess = [None,None]
         rate = rospy.Rate(5)
 
-        rospy.loginfo("CLIENT SETUP COMPLETE")
+        rospy.loginfo("LOCATION_CLIENT SETUP COMPLETE")
         old_mess_x = 0
         old_mess_y = 0
         while not rospy.is_shutdown():
@@ -41,6 +39,11 @@ class ClientNode():
 
             try:
                 s.sendto(pickle.dumps([0, ROBOT_ID, self.pos[0], self.pos[1]]), addr)
+##############################################################################################
+#                      NEED TO SEND THEM ONLY IF THEY ARE DIFFERENT MESSES BECAUSE THIS CLIENT
+#                      SENDS MESS IN ROBOT FRAME AND THE MESS_X AND MESS_Y WILL CHANGE WHEN
+#                      THE ROBOT MOVES 
+##############################################################################################
                 if mess_x != None and mess_y != None:
                     rospy.loginfo("HERE!!!!!!")
                     s.sendto(pickle.dumps([1, ROBOT_ID, mess_x, mess_y]), addr)
@@ -48,7 +51,7 @@ class ClientNode():
                     old_mess_y = mess_y
             except Exception as e:
                 s.close()
-                rospy.loginfo("ERROR. CLOSING SOCKET")
+                rospy.loginfo("LOCATION_CLIENT ERROR. CLOSING SOCKET")
                 rospy.loginfo(e)
                 sys.exit()
 

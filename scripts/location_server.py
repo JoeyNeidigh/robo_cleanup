@@ -7,7 +7,6 @@ import socket
 import time
 import numpy as np
 from std_msgs.msg import Float32MultiArray
-from geometry_msgs.msg import Pose, PoseWithCovariance
 from visualization_msgs.msg import Marker
 
 # Command and control node for robo_cleanup.
@@ -52,7 +51,6 @@ class CommandControl():
                 elif z[0] == 1 and self.is_new_mess(z[2], z[3]):
                     rospy.loginfo("HERE!!!")
                     mess_marker_pub.publish(self.make_marker(z[1], z[2], z[3], 'mess'))
-
 
                 if(self.is_time_to_clean() and counter == 0):
                     arr.data = self.to_array()
