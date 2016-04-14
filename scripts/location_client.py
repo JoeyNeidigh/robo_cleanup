@@ -5,7 +5,7 @@ import pickle
 import socket
 import numpy as np
 from visualization_msgs.msg import Marker
-from geometry_msgs.msg import PoseWithCovarianceStamped, Point, PointStamped()
+from geometry_msgs.msg import PoseWithCovarianceStamped, Point, PointStamped
 
 # This node will periodically send its position to the CC.
 # It will also send a list of the messes that it has discovered to the CC.
