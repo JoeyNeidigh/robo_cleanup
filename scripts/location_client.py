@@ -15,8 +15,7 @@ class ClientNode():
     def __init__(self):
         rospy.init_node('location_node')
         rospy.Subscriber('/visualization_marker', Marker, self.marker_callback)
-        rospy.Subscriber('/amcl_pose', PoseWithCovarianceStamped,
-                            self.position_callback)
+        rospy.Subscriber('/amcl_pose', PoseWithCovarianceStamped, self.position_callback)
 
         host = "134.126.125.125" # ip of server
         port = 13000
@@ -31,8 +30,7 @@ class ClientNode():
             rospy.loginfo("FAILED TO CREATE SOCKET")
             sys.exit()
 
-        rospy.Subscriber('/amcl_pose', PoseWithCovarianceStamped, self.amcl_callback)
-        self.ROBOT_ID = 0
+        self.ROBOT_ID = 1
         self.pos = [0,0]
         self.mess = [None,None]
         rate = rospy.Rate(5)
@@ -47,8 +45,6 @@ class ClientNode():
 
             try:
                 self.s.sendto(pickle.dumps([0,self.ROBOT_ID, self.pos[0], self.pos[1]]), self.addr)
-
- 
             except Exception as e:
                 s.close()
                 rospy.loginfo("LOCATION_CLIENT ERROR. CLOSING SOCKET")

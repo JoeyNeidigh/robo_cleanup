@@ -16,20 +16,29 @@ class ClientNode():
         self.og = None
         rospy.Subscriber('/seenmap', OccupancyGrid, self.seenmap_callback)
 
-        host = "134.126.125.125" # ip of server
-        port = 13001
+        host = "134.126.125.237" # ip of server
+        port = 13006
         BUFFER_SIZE = 1024
         self.goal_reached = True
 
 
         # set up socket
-        try:
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.connect((host, port))
-        except Exception as e:
-            rospy.loginfo("FAILED TO CREATE SOCKET")
-            rospy.loginfo(e)
-            sys.exit()
+        connected = False
+        count = 0
+        while not connected:
+            try:
+                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                s.connect((host, port))
+                connected = True
+            except Exception as e:
+                if count <= 10:
+                    rospy.loginfo("FAILED TO CONNECT. RETRYING...")
+                    connected = False
+                    count += 1
+                    rospy.sleep(1)
+                else:
+                    rospy.loginfo("I QUIT")
+                    sys.exit()
 
         while self.og is None and not rospy.is_shutdown():
             rospy.loginfo("Waiting for seen_map...")
