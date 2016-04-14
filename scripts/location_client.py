@@ -23,7 +23,7 @@ class ClientNode():
         self.messes = []
         self.tf_listener = tf.TransformListener()
         self.position = None
-        self.count = 0
+
         try:
             self.s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         except:
@@ -64,43 +64,39 @@ class ClientNode():
 
     def marker_callback(self, marker):
         """ The marker callback to see the ar_markers"""
-        if self.count == 25:
-            marker_point = PointStamped()
-            marker_point.header.frame_id = 'camera_rgb_optical_frame'
+        marker_point = PointStamped()
+        marker_point.header.frame_id = 'camera_rgb_optical_frame'
+        marker_point.header.stamp = rospy.get_rostime()
+        marker_point.point.x = marker.pose.position.x
+        marker_point.point.y = marker.pose.position.y
+        marker_point.point.z = marker.pose.position.z
+
+        try: # transform marker position into the map frame
             marker_point.header.stamp = rospy.get_rostime()
-            marker_point.point.x = marker.pose.position.x
-            marker_point.point.y = marker.pose.position.y
-            marker_point.point.z = marker.pose.position.z
+            self.tf_listener.waitForTransform('camera_rgb_optical_frame',
+                                              'map',
+                                              marker_point.header.stamp,
+                                              rospy.Duration(1.0))
+            # get the point transform
+            marker_point = self.tf_listener.transformPoint('map', marker_point) 
+        except tf.Exception as e:
+            print(e)
+            print("ERROR in marker_callback")
 
-            try: # transform marker position into the map frame
-                marker_point.header.stamp = rospy.get_rostime()
-                self.tf_listener.waitForTransform('camera_rgb_optical_frame',
-                                                  'map',
-                                                  marker_point.header.stamp,
-                                                  rospy.Duration(1.0))
-                # get the point transform
-                marker_point = self.tf_listener.transformPoint('map', marker_point) 
-            except tf.Exception as e:
-                print(e)
-                print("ERROR in marker_callback")
-
-            new = True
-            if len(self.messes) is not 0:
-                for mess in self.messes:
-                    if (self.close_enough(mess.x, mess.y, marker_point.point.x, marker_point.point.y, .15)):
-                        new = False
-            else:
-                if self.close_enough(self.position.position.x, self.position.position.y, marker_point.point.x, marker_point.point.y, 1):
-                    self.messes.append(marker_point.point)
-                    self.s.sendto(pickle.dumps([1, self.ROBOT_ID, marker_point.point.x, marker_point.point.y]), self.addr)
-
-            if self.close_enough(self.position.position.x, self.position.position.y, marker_point.point.x, marker_point.point.y, 1) and new:
+        new = True
+        if len(self.messes) is not 0:
+            for mess in self.messes:
+                if (self.close_enough(mess.x, mess.y, marker_point.point.x, marker_point.point.y, .15)):
+                    new = False
+        else:
+            if self.close_enough(self.position.position.x, self.position.position.y, marker_point.point.x, marker_point.point.y, 1):
                 self.messes.append(marker_point.point)
                 self.s.sendto(pickle.dumps([1, self.ROBOT_ID, marker_point.point.x, marker_point.point.y]), self.addr)
 
-            self.count == 0
-        else:
-            self.count += 1
+        if self.close_enough(self.position.position.x, self.position.position.y, marker_point.point.x, marker_point.point.y, 1) and new:
+            self.messes.append(marker_point.point)
+            self.s.sendto(pickle.dumps([1, self.ROBOT_ID, marker_point.point.x, marker_point.point.y]), self.addr)
+
             
                 
 
