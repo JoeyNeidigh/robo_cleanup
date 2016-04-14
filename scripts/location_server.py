@@ -21,7 +21,7 @@ class CommandControl():
         mess_arr_pub = rospy.Publisher('/mess_arr', Float32MultiArray, queue_size=10)
 
         self.messes = []
-        self.TIME = 60
+        self.TIME = 120
         self.start_time = rospy.get_time()
 
         # Set up port for incomming traffic

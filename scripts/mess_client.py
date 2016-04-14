@@ -29,13 +29,17 @@ class MessClient():
         
         rospy.spin()
 
+    def split_list(self, a_list):
+        half = len(a_list)/2
+        return a_list[:half], a_list[half:]
+
     def mess_arr_callback(self, mess_msg):
         data = pickle.dumps(mess_msg.data)
 
-        #split data into two seperate arrays
+        list_a, list_b = split_list(data)
         try:
-            self.s.sendto(data, self.addr1)
-            self.s.sendto(data, self.addr2)
+            self.s.sendto(list_a, self.addr1)
+            self.s.sendto(list_b, self.addr2)
 
         except:
             self.s.close()
