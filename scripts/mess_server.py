@@ -44,6 +44,7 @@ class MessServer():
             except Exception as e:
                 s.close()
                 rospy.loginfo(e)
+                sys.exit()
 
                 
 if __name__ == "__main__":

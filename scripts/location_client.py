@@ -64,7 +64,7 @@ class ClientNode():
 
     def marker_callback(self, marker):
         """ The marker callback to see the ar_markers"""
-        if self.count == 100:
+        if self.count == 25:
             marker_point = PointStamped()
             marker_point.header.frame_id = 'camera_rgb_optical_frame'
             marker_point.header.stamp = rospy.get_rostime()
