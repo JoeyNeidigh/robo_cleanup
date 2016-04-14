@@ -26,6 +26,8 @@
   <node name="map_node" pkg="robo_cleanup" type="map_node.py" output="screen"/>
   <node name="mess_node" pkg="robo_cleanup" type="mess_server.py" output="screen"/>
   <node name="location_node" pkg="robo_cleanup" type="location_client.py" output="screen"/>
+  <node name="goal_server" pkg="robo_cleanup" type="goal_server.py" output="screen"/>
+  <node name="goal_client" pkg="robo_cleanup" type="goal_client.py" output="screen"/>
 
   <include file="$(find turtlebot_bringup)/launch/3dsensor.launch">
     <arg name="rgb_processing" value="false" />
