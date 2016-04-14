@@ -91,7 +91,8 @@ class ClientNode():
                 print("ERROR in marker_callback")
 
             if self.close_enough(self.position.position.x, self.position.position.y, marker_point.point.x, marker_point.point.y, 1):
-                self.mess_pub.publish(marker_point.point)
+                self.mess[0] = marker_point.point.x
+                self.mess[1] = marker_point.point.y
                 self.old_marker.x = marker_point.point.x
                 self.old_marker.y = marker_point.point.y
 
