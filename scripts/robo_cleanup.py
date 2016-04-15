@@ -63,17 +63,21 @@ class RoboCleanupNode(object):
         
         #Initially Sets the safezone to just the start location 
         self.safezone = self.position
-   
+        counter = 0
         while not rospy.is_shutdown():   
             
             #Search the space
-            if (self.searching and self.goal is not None and 
-                (self.ac.get_state() is 3 or self.ac.get_state() is 4 
-                or not self.close_enough(self.position.position.x, 
-                self.position.position.y, self.goal.x, self.goal.y, .7))):
-                goal = self.goal_message(self.goal.x, self.goal.y, 0)
-                self.ac.send_goal(goal)
-                self.goal = None                
+            if (self.searching and self.goal is not None):
+                if counter == 0:
+                    goal = self.goal_message(self.goal.x, self.goal.y, 0)
+                    self.ac.send_goal(goal)
+                    self.goal = None 
+                    counter += 1
+
+                if self.close_enough(self.position.position.x,self.position.position.y, self.goal.x, self.goal.y, .7) or self.ac.get_state() is 4 or self.ac.get_state() is 3:
+                    goal = self.goal_message(self.goal.x, self.goal.y, 0)
+                    self.ac.send_goal(goal)
+                    self.goal = None                
                 
             # Just does the current mess it sees 
             # Need to have it search through a shared list of the mess objects and
@@ -85,7 +89,7 @@ class RoboCleanupNode(object):
                     self.drive_to_mess(self.mess_arr[i+count], self.mess_arr[i+1+count])
                     self.take_to_safezone()         
                     count += 1
-                self.clean = False
+                self.cleaning = False
     	
             
     def take_to_safezone(self):
