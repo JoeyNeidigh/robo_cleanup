@@ -85,6 +85,7 @@ class RoboCleanupNode(object):
                     self.drive_to_mess(self.mess_arr[i+count], self.mess_arr[i+1+count])
                     self.take_to_safezone()         
                     count += 1
+                self.clean = False
     	
             
     def take_to_safezone(self):
@@ -145,6 +146,7 @@ class RoboCleanupNode(object):
         self.mess_arr = messes_msg.data
         self.searching = False
         self.cleaning = True
+        self.ac.cancel_goal()
 
 if __name__ == "__main__":
     RoboCleanupNode()
