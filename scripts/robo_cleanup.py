@@ -71,13 +71,12 @@ class RoboCleanupNode(object):
                 if counter == 0:
                     goal = self.goal_message(self.goal.x, self.goal.y, 0)
                     self.ac.send_goal(goal)
-                    self.goal = None 
                     counter += 1
 
                 if self.close_enough(self.position.position.x,self.position.position.y, self.goal.x, self.goal.y, .7) or self.ac.get_state() is 4 or self.ac.get_state() is 3:
                     goal = self.goal_message(self.goal.x, self.goal.y, 0)
                     self.ac.send_goal(goal)
-                    self.goal = None                
+                self.goal = None                
                 
             # Just does the current mess it sees 
             # Need to have it search through a shared list of the mess objects and

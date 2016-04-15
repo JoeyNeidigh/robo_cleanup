@@ -30,8 +30,17 @@ class MessClient():
         rospy.spin()
 
     def split_list(self, a_list):
-        half = len(a_list)/2
-        return a_list[:half], a_list[half:]
+        a, b = 
+        if len(mess_msg.data)/2 % 2 is 0:
+            half = len(a_list)/2
+            a,b = a_list[:half], a_list[half:]
+        elif len(mess_msg.data)/2 is 1:
+            a = a_list
+            b = []
+        else:
+            half = len(a_list)/2
+            a,b = a_list[:half-1], a_list[half-1:]
+        return a,b
 
     def mess_arr_callback(self, mess_msg):
         rospy.loginfo("callback")
@@ -41,7 +50,7 @@ class MessClient():
                 list_a, list_b = self.split_list(mess_msg.data)
                 data1 = pickle.dumps(list_a)
                 data2 = pickle.dumps(list_b)
-                #self.s.sendto(data1, self.addr1)
+                self.s.sendto(data1, self.addr1)
                 self.s.sendto(data2, self.addr2)
                 rospy.loginfo("SENT MESS LISTS")
 
