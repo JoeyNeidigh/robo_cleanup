@@ -38,13 +38,13 @@ class SeenmapServer():
                                 origin_y = self.map_msg.info.origin.position.y) 
 
         while True:
-            message = self.recv_msg(sock)
+            compressed_message = self.recv_msg(sock)
+            message = zlib.decompress(compressed_message)
             if not message is None:
-                rospy.loginfo("here")
                 seenmap.grid = pickle.loads(message)
                 og = seenmap.to_message()
                 seenmap_pub.publish(og)
-                rospy.loginfo("here2")
+                
 
     def recv_msg(self, sock):
         # Read message length and unpack it into an integer

@@ -7,6 +7,7 @@ import struct
 import rospy
 import map_utils
 from nav_msgs.msg import OccupancyGrid
+import zlib
 
 class SeenmapClient():
     def __init__(self):
@@ -27,7 +28,8 @@ class SeenmapClient():
     def callback(self, og):
         seenmap = map_utils.Map(og)
         message = pickle.dumps(seenmap.grid)
-        self.send_msg(message)
+        compressed_message = zlib.compress(message)
+        self.send_msg(compressed_message)
 
     def send_msg(self, msg):
         # Prefix each message with a 4-byte length (network byte order)
@@ -39,3 +41,6 @@ class SeenmapClient():
             rospy.loginfo("SEENMAP_CLIENT ERROR")
             rospy.loginfo(e)
             sys.exit()
+
+if __name__ == "__main__":
+    SeenmapClient()
