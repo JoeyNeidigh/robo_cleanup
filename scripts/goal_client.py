@@ -21,7 +21,6 @@ class ClientNode():
         BUFFER_SIZE = 1024
         self.goal_reached = True
 
-
         # set up socket
         connected = False
         count = 0
@@ -54,10 +53,8 @@ class ClientNode():
                 goal = pickle.loads(s.recv(BUFFER_SIZE))
                 if self.seen(goal):
                     s.send("SEEN")
-                    rospy.loginfo("SEEN GOAL (%f, %f)", goal[0], goal[1])
                 else:
                     s.send("UNSEEN")
-                    rospy.loginfo("UNSEEN GOAL (%f, %f)", goal[0], goal[1])
             except Exception as e:
                 s.close()
                 rospy.loginfo("TCP_TEST ERROR:")
@@ -69,8 +66,6 @@ class ClientNode():
 
     def seenmap_callback(self, msg):
         self.og = msg
-
-
 
 if __name__ == "__main__":
     ClientNode()

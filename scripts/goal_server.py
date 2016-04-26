@@ -33,8 +33,6 @@ class CommandControl():
             rospy.loginfo("Waiting for map...")
             rospy.sleep(1)
 
-        
-
         self.map = map_utils.Map(self.map_msg)
         self.goal_reached = True
 
@@ -76,8 +74,6 @@ class CommandControl():
                     goal_msg.target_pose.pose.position.x = goal[0]
                     goal_msg.target_pose.pose.position.y = goal[1]
                     goal_pub.publish(goal_msg)
-                else:
-                    rospy.loginfo("TRYING ANOTHER GOAL")
             except Exception as e:
                 s.close()
                 rospy.loginfo("SEENMAP SERVER ERROR:")
